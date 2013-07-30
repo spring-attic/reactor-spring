@@ -1,0 +1,4 @@
+rootProject.name = 'reactor-spring'
+
+include 'reactor-spring-context',
+		'reactor-spring-webmvc'
