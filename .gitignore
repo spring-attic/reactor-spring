@@ -8,3 +8,9 @@ build
 *.jar
 *.war
 *.ear
+
+# ECLIPSE/STS #
+.settings/
+.gradle/
+.project
+.classpath
