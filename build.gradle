@@ -211,7 +211,7 @@ configure(rootProject) {
 		source subprojects.collect { project ->
 			project.sourceSets.main.allJava
 		}
-		
+
 		maxMemory = "1024m"
 		destinationDir = new File(buildDir, "api")
 
