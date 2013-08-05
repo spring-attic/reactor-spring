@@ -18,7 +18,7 @@
 description = 'Reactor Spring Components'
 
 ext {
-	gradleVersion = '1.7-rc-1'
+	gradleVersion = '1.7-rc-2'
 	gradleScriptDir = "${rootProject.projectDir}/gradle"
 
 	// Languages
@@ -74,6 +74,7 @@ allprojects {
 		maven { url 'http://repo.springsource.org/libs-release' }
 		maven { url 'http://repo.springsource.org/libs-milestone' }
 		maven { url 'http://repo.springsource.org/plugins-release' }
+		maven { url 'http://repo.springsource.org/libs-snapshot' }
 	}
 }
 
@@ -210,7 +211,7 @@ configure(rootProject) {
 		source subprojects.collect { project ->
 			project.sourceSets.main.allJava
 		}
-
+		
 		maxMemory = "1024m"
 		destinationDir = new File(buildDir, "api")
 
