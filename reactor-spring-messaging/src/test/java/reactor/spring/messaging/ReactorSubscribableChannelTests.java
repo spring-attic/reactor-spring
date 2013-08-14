@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 public class ReactorSubscribableChannelTests {
 
 	static final Logger LOG  = LoggerFactory.getLogger(ReactorSubscribableChannelTests.class);
-	static final int    MSGS = 50000000;
+	static final int    MSGS = 5000;
 
 	@Autowired
 	Reactor reactor;
