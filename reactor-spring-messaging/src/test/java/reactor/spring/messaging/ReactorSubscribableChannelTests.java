@@ -26,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Comparing a Reactor {@code Processor}-backed Channel to a plain {@code Reactor}-backed Channel for comparing the net
+ * effect of dynamic event routing on total throughput. It's pretty clear here that a simple Channel doesn't benefit
+ * from the Reactor dynamic event dispatching and is better-suited to the single-task {@code Processor}.
+ *
  * @author Jon Brisbin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
