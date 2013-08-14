@@ -14,3 +14,4 @@ build
 .gradle/
 .project
 .classpath
+.gradle
