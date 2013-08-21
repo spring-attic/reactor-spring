@@ -23,7 +23,7 @@ public class ReactorSubscribableChannel extends AbstractSubscribableChannel {
 	private final Processor<MessageEvent> processor;
 
 	public ReactorSubscribableChannel() {
-		this(true);
+		this(false);
 	}
 
 	public ReactorSubscribableChannel(boolean singleThreadedProducer) {
