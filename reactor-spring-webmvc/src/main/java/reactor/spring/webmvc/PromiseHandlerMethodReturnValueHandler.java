@@ -1,50 +1,22 @@
 package reactor.spring.webmvc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.context.request.async.WebAsyncUtils;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import reactor.core.composable.Promise;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.util.List;
+import reactor.function.Consumer;
 
 /**
  * @author Jon Brisbin
  */
 public class PromiseHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PromiseHandlerMethodReturnValueHandler.class);
-
-	private final List<HandlerMethodReturnValueHandler> delegates;
-
-	public PromiseHandlerMethodReturnValueHandler(List<HandlerMethodReturnValueHandler> delegates) {
-		Assert.notNull(delegates, "Delegate HandlerMethodReturnValueHandler cannot be null.");
-		this.delegates = delegates;
-	}
-
 	@Override
 	public boolean supportsReturnType(MethodParameter returnType) {
-		if (!Promise.class.isAssignableFrom(returnType.getParameterType())) {
-			return false;
-		}
-
-		MethodParameter promiseParam = resolvePromiseType(returnType);
-		for (HandlerMethodReturnValueHandler delegate : delegates) {
-			if (delegate instanceof PromiseHandlerMethodReturnValueHandler) {
-				continue;
-			}
-			if (delegate.supportsReturnType(promiseParam)) {
-				return true;
-			}
-		}
-
-		return false;
+		return Promise.class.isAssignableFrom(returnType.getParameterType());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -53,33 +25,23 @@ public class PromiseHandlerMethodReturnValueHandler implements HandlerMethodRetu
 																final MethodParameter returnType,
 																final ModelAndViewContainer mavContainer,
 																final NativeWebRequest webRequest) throws Exception {
-		Object obj = ((Promise) returnValue).await();
+		final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
+		((Promise) returnValue)
+				.onSuccess(new Consumer() {
+					@Override
+					public void accept(Object o) {
+						deferredResult.setResult(o);
+					}
+				})
+				.onError(new Consumer<Throwable>() {
+					@Override
+					public void accept(Throwable t) {
+						deferredResult.setErrorResult(t);
+					}
+				});
 
-		MethodParameter promiseParam = resolvePromiseType(returnType);
-		for (HandlerMethodReturnValueHandler delegate : delegates) {
-			if (delegate instanceof PromiseHandlerMethodReturnValueHandler) {
-				continue;
-			}
-			if (delegate.supportsReturnType(promiseParam)) {
-				delegate.handleReturnValue(obj, promiseParam, mavContainer, webRequest);
-				return;
-			}
-		}
-	}
-
-	private MethodParameter resolvePromiseType(MethodParameter mp) {
-		Class<?> promiseType = (Class<?>) ((ParameterizedType) ((ParameterizedType) mp.getGenericParameterType()).getActualTypeArguments()[0]).getRawType();
-
-		MethodParameter promiseParam = new MethodParameter(mp.getMethod(), -1);
-		Field fld = ReflectionUtils.findField(MethodParameter.class, "parameterType");
-		ReflectionUtils.makeAccessible(fld);
-		try {
-			fld.set(promiseParam, promiseType);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
-
-		return promiseParam;
+		WebAsyncUtils.getAsyncManager(webRequest)
+								 .startDeferredResultProcessing(deferredResult, mavContainer);
 	}
 
 }

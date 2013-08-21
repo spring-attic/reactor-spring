@@ -1,6 +1,5 @@
 package reactor.spring.webmvc;
 
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,7 @@ import reactor.spring.annotation.Selector;
 public class DeferredHandler {
 
 	@Selector(value = "test", reactor = "@reactor")
-	public void test(Deferred<HttpEntity<String>, Promise<HttpEntity<String>>> d) {
+	public void test(Deferred<ResponseEntity<String>, Promise<ResponseEntity<String>>> d) {
 		d.accept(new ResponseEntity<String>("Hello World!", HttpStatus.OK));
 	}
 

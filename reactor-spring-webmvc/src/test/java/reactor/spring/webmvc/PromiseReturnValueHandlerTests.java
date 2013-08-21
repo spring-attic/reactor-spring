@@ -15,13 +15,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import reactor.core.Environment;
 import reactor.core.Reactor;
 import reactor.core.spec.Reactors;
 import reactor.spring.context.config.EnableReactor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -62,19 +60,9 @@ public class PromiseReturnValueHandlerTests {
 			return Reactors.reactor().env(env).get();
 		}
 
-		@Bean
-		public PromiseHandlerMethodReturnValueHandler promiseHandlerMethodReturnValueHandler(RequestMappingHandlerAdapter adapter) {
-			List<HandlerMethodReturnValueHandler> returnValueHandlers = adapter.getReturnValueHandlers();
-
-			List<HandlerMethodReturnValueHandler> newReturnValueHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-
-			PromiseHandlerMethodReturnValueHandler phmrvh = new PromiseHandlerMethodReturnValueHandler(returnValueHandlers);
-			newReturnValueHandlers.add(phmrvh);
-			newReturnValueHandlers.addAll(returnValueHandlers);
-
-			adapter.setReturnValueHandlers(newReturnValueHandlers);
-
-			return phmrvh;
+		@Override
+		protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+			returnValueHandlers.add(new PromiseHandlerMethodReturnValueHandler());
 		}
 
 	}
