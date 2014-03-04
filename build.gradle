@@ -173,19 +173,6 @@ project('reactor-spring-core') {
 				"org.springframework:spring-context:$springVersion",
 				"org.springframework:spring-core:$springVersion",
 				"org.springframework:spring-expression:$springVersion"
-
-		// High-speed Messaging
-		optional "net.openhft:chronicle:$openHftChronicleVersion",
-				"net.openhft:lang:$openHftLangVersion"
-
-		// JSON handling
-		optional "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion",
-				"com.jayway.jsonpath:json-path:$jsonPathVersion"
-
-		// Serialization
-		optional "com.esotericsoftware.kryo:kryo:$kryoVersion",
-				"com.google.protobuf:protobuf-java:$protobufVersion",
-				"org.xerial.snappy:snappy-java:$snappyVersion"
 	}
 }
 
@@ -196,6 +183,9 @@ project('reactor-spring-context') {
 
 		// Spring
 		compile "org.springframework:spring-context-support:$springVersion"
+
+		// JSON handling
+		compile "com.jayway.jsonpath:json-path:$jsonPathVersion"
 	}
 }
 
