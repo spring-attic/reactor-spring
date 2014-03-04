@@ -1,4 +1,4 @@
-package reactor.spring.annotation;
+package reactor.spring.context.annotation;
 
 /**
  * Enum for indicating the type of {@link reactor.event.selector.Selector} that should be created.

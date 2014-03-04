@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package reactor.spring.factory.config
+package reactor.spring.context.config
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
@@ -22,8 +22,8 @@ import org.springframework.context.annotation.Configuration
 import reactor.core.Environment
 import reactor.core.Reactor
 import reactor.event.Event
-import reactor.spring.annotation.Consumer
-import reactor.spring.annotation.Selector
+import reactor.spring.context.annotation.Consumer
+import reactor.spring.context.annotation.Selector
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -50,6 +50,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 		then:
 			"the method has been invoked"
 			handlerBean.latch.await(1, TimeUnit.SECONDS)
+
 	}
 
 }
@@ -70,7 +71,7 @@ class HandlerBean {
 class AnnotatedHandlerConfig {
 
 	@Bean
-	Environment reactorSpringEnvironment() {
+	Environment env() {
 		return new Environment()
 	}
 
@@ -80,7 +81,7 @@ class AnnotatedHandlerConfig {
 	}
 
 	@Bean
-	ConsumerBeanAutoConfiguration consumerBeanAutoConfiguration(Environment env) {
+	ConsumerBeanAutoConfiguration consumerBeanAutoConfiguration() {
 		return new ConsumerBeanAutoConfiguration()
 	}
 

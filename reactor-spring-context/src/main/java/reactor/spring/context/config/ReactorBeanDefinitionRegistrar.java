@@ -10,7 +10,6 @@ import reactor.core.configuration.PropertiesConfigurationReader;
 import reactor.core.support.DefaultEnvironmentSupplier;
 import reactor.function.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
-import reactor.spring.factory.config.ConsumerBeanAutoConfiguration;
 
 import java.util.Map;
 

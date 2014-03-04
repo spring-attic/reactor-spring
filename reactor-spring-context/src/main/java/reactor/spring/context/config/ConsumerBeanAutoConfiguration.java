@@ -1,4 +1,4 @@
-package reactor.spring.factory.config;
+package reactor.spring.context.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,14 +7,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.context.expression.EnvironmentAccessor;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.expression.BeanResolver;
-import org.springframework.expression.EvaluationException;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.expression.*;
 import org.springframework.expression.common.TemplateAwareExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -22,22 +25,23 @@ import reactor.core.Observable;
 import reactor.event.Event;
 import reactor.function.Consumer;
 import reactor.function.Function;
-import reactor.spring.annotation.ReplyTo;
-import reactor.spring.annotation.Selector;
+import reactor.spring.context.annotation.ReplyTo;
+import reactor.spring.context.annotation.Selector;
 import reactor.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static reactor.io.selector.JsonPathSelector.jsonPathSelector;
 import static reactor.event.selector.Selectors.*;
+import static reactor.io.selector.JsonPathSelector.jsonPathSelector;
 
 /**
  * {@link org.springframework.context.ApplicationListener} implementation that finds beans registered in the current
- * {@link org.springframework.context.ApplicationContext} that look like a {@link reactor.spring.annotation.Consumer}
+ * {@link org.springframework.context.ApplicationContext} that look like a {@link reactor.spring.context.annotation
+ * .Consumer}
  * bean and interrogates it for event handling methods.
  *
  * @author Jon Brisbin
@@ -57,15 +61,22 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConsumerBeanAutoConfiguration.class);
 
+	private Map<String, Boolean> wiredBeans = new HashMap<String, Boolean>();
+
 	private ApplicationContext            appCtx;
 	private BeanResolver                  beanResolver;
 	private ConversionService             conversionService;
 	private TemplateAwareExpressionParser expressionParser;
-
-	private boolean started = false;
+	private List<PropertyAccessor>        expressionPropertyAccessors;
 
 	public ConsumerBeanAutoConfiguration() {
 		this.expressionParser = new SpelExpressionParser();
+
+		this.expressionPropertyAccessors = new ArrayList<PropertyAccessor>();
+		this.expressionPropertyAccessors.add(new EnvironmentAccessor());
+		this.expressionPropertyAccessors.add(new BeanFactoryAccessor());
+		this.expressionPropertyAccessors.add(new ReflectivePropertyAccessor());
+		this.expressionPropertyAccessors.add(new DirectFieldAccessPropertyAccessor());
 	}
 
 	@Override
@@ -80,43 +91,50 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			return;
 		}
 
-		synchronized(this) {
-			if(started) {
-				return;
-			}
-
-			if(null == beanResolver) {
-				beanResolver = new BeanFactoryResolver(ctx);
-			}
-
-			if(null == conversionService) {
-				try {
-					conversionService = ctx.getBean(REACTOR_CONVERSION_SERVICE_BEAN_NAME, ConversionService.class);
-				} catch(BeansException be) {
-					if(LOG.isDebugEnabled()) {
-						LOG.debug(REACTOR_CONVERSION_SERVICE_BEAN_NAME + " has not been found in the context. Skipping.");
-					}
-				}
-			}
-
-			Set<Method> methods;
-			Class<?> type;
-			for(String beanName : ctx.getBeanDefinitionNames()) {
-				type = ctx.getType(beanName);
-				methods = findHandlerMethods(type, CONSUMER_METHOD_FILTER);
-				if(methods != null && methods.size() > 0) {
-					wireBean(ctx.getBean(beanName), methods);
-				}
-			}
-
-			started = true;
+		if(null == beanResolver) {
+			beanResolver = new BeanFactoryResolver(ctx);
 		}
 
+		if(null == conversionService) {
+			try {
+				conversionService = ctx.getBean(REACTOR_CONVERSION_SERVICE_BEAN_NAME, ConversionService.class);
+			} catch(BeansException be) {
+				if(LOG.isDebugEnabled()) {
+					LOG.debug(REACTOR_CONVERSION_SERVICE_BEAN_NAME + " has not been found in the context. Skipping.");
+				}
+			}
+		}
+
+		Set<Method> methods = new HashSet<Method>();
+		Class<?> type;
+		for(String beanName : ctx.getBeanDefinitionNames()) {
+			type = ctx.getType(beanName);
+			if(null == AnnotationUtils.findAnnotation(type, reactor.spring.context.annotation.Consumer.class)) {
+				wiredBeans.put(beanName, Boolean.FALSE);
+				continue;
+			}
+			if(wiredBeans.containsKey(beanName)) {
+				continue;
+			}
+
+			try {
+				if(Function.class.isAssignableFrom(type)) {
+					methods.add(type.getDeclaredMethod("apply"));
+				} else if(Consumer.class.isAssignableFrom(type)) {
+					methods.add(type.getDeclaredMethod("accept"));
+				} else {
+					methods.addAll(findHandlerMethods(type, CONSUMER_METHOD_FILTER));
+				}
+				wireBean(ctx.getBean(beanName), methods);
+				wiredBeans.put(beanName, Boolean.TRUE);
+			} catch(NoSuchMethodException ignored) {
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void wireBean(final Object bean, final Set<Method> methods) {
-		if(methods == null || methods.isEmpty()) {
+		if(methods.isEmpty()) {
 			return;
 		}
 
@@ -158,18 +176,18 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			return null;
 		}
 
-		StandardEvaluationContext evalCtx = new StandardEvaluationContext();
-		evalCtx.setRootObject(bean);
+		StandardEvaluationContext evalCtx = new StandardEvaluationContext(bean);
 		evalCtx.setBeanResolver(beanResolver);
+		evalCtx.setPropertyAccessors(expressionPropertyAccessors);
 
 		return (T)expressionParser.parseExpression(selector).getValue(evalCtx);
 	}
 
-	protected Observable fetchObservable(Selector selectorAnno, Object bean) {
+	private Observable fetchObservable(Selector selectorAnno, Object bean) {
 		return expression(selectorAnno.reactor(), bean);
 	}
 
-	protected Object parseSelector(Selector selector, Object bean, Method method) {
+	private Object parseSelector(Selector selector, Object bean, Method method) {
 		if(!StringUtils.hasText(selector.value())) {
 			return method.getName();
 		}
@@ -181,7 +199,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	protected Object parseReplyTo(ReplyTo selector, Object bean) {
+	private Object parseReplyTo(ReplyTo selector, Object bean) {
 		if(StringUtils.isEmpty(selector.value())) {
 			return null;
 		}
@@ -192,7 +210,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	protected reactor.event.selector.Selector fetchSelector(Selector selectorAnno, Object bean, Method method) {
+	private reactor.event.selector.Selector fetchSelector(Selector selectorAnno, Object bean, Method method) {
 		Object sel = parseSelector(selectorAnno, bean, method);
 		try {
 			switch(selectorAnno.type()) {
@@ -219,7 +237,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		return object(sel);
 	}
 
-	protected final static class ReplyToServiceConsumer implements Consumer<Event> {
+	private final static class ReplyToServiceConsumer implements Consumer<Event> {
 
 		final private Observable reactor;
 		final private Object     replyToKey;
@@ -253,7 +271,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	protected final static class ServiceConsumer implements Consumer<Event> {
+	private final static class ServiceConsumer implements Consumer<Event> {
 		final private Invoker handler;
 
 		ServiceConsumer(Invoker handler) {
@@ -270,7 +288,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	protected final static class Invoker implements Function<Event, Object> {
+	private final static class Invoker implements Function<Event, Object> {
 
 		final private Method            method;
 		final private Object            bean;
@@ -340,8 +358,67 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	public static Set<Method> findHandlerMethods(Class<?> handlerType,
-	                                             final ReflectionUtils.MethodFilter handlerMethodFilter) {
+	private static class DirectFieldAccessPropertyAccessor implements PropertyAccessor {
+		private static final Map<Integer, Field> fieldCache = new ConcurrentHashMap<Integer, Field>();
+
+		@Override
+		public Class<?>[] getSpecificTargetClasses() {
+			return null;
+		}
+
+		@Override
+		public boolean canRead(EvaluationContext context, Object target, String name) throws AccessException {
+			return null != findField(target, name);
+		}
+
+		@Override
+		public TypedValue read(EvaluationContext context, Object target, String name) throws AccessException {
+			Field fld = findField(target, name);
+			try {
+				Object obj = fld.get(target);
+				return new TypedValue(obj, TypeDescriptor.forObject(obj));
+			} catch(IllegalAccessException e) {
+				throw new AccessException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public boolean canWrite(EvaluationContext context, Object target, String name) throws AccessException {
+			return null != findField(target, name);
+		}
+
+		@Override
+		public void write(EvaluationContext context, Object target, String name, Object newValue) throws AccessException {
+			Field fld = findField(target, name);
+			try {
+				fld.set(target, newValue);
+			} catch(IllegalAccessException e) {
+				throw new AccessException(e.getMessage(), e);
+			}
+		}
+
+		private Field findField(Object target, final String name) {
+			final int cacheKey = target.hashCode() & name.hashCode();
+			if(!fieldCache.containsKey(cacheKey)) {
+				ReflectionUtils.doWithFields(
+						target.getClass(),
+						new ReflectionUtils.FieldCallback() {
+							@Override
+							public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+								if(name.equals(field.getName())) {
+									ReflectionUtils.makeAccessible(field);
+									fieldCache.put(cacheKey, field);
+								}
+							}
+						}
+				);
+			}
+			return fieldCache.get(cacheKey);
+		}
+	}
+
+	private static Set<Method> findHandlerMethods(Class<?> handlerType,
+	                                              final ReflectionUtils.MethodFilter handlerMethodFilter) {
 		final Set<Method> handlerMethods = new LinkedHashSet<Method>();
 
 		if(handlerType == null) {
