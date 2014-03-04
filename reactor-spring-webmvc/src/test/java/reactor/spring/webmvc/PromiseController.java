@@ -26,9 +26,7 @@ public class PromiseController {
 	@RequestMapping("/promise")
 	@ResponseBody
 	public Promise<ResponseEntity<String>> get() {
-		Deferred<ResponseEntity<String>, Promise<ResponseEntity<String>>> d = Promises.<ResponseEntity<String>>defer()
-																																									.env(env)
-																																									.get();
+		Deferred<ResponseEntity<String>, Promise<ResponseEntity<String>>> d = Promises.<ResponseEntity<String>>defer(env);
 
 		reactor.notify("test", Event.wrap(d));
 

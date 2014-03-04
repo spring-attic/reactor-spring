@@ -22,11 +22,11 @@ public class PromiseHandlerMethodReturnValueHandler implements HandlerMethodRetu
 	@SuppressWarnings("unchecked")
 	@Override
 	public void handleReturnValue(Object returnValue,
-																final MethodParameter returnType,
-																final ModelAndViewContainer mavContainer,
-																final NativeWebRequest webRequest) throws Exception {
+	                              final MethodParameter returnType,
+	                              final ModelAndViewContainer mavContainer,
+	                              final NativeWebRequest webRequest) throws Exception {
 		final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
-		((Promise) returnValue)
+		((Promise)returnValue)
 				.onSuccess(new Consumer() {
 					@Override
 					public void accept(Object o) {
@@ -41,7 +41,7 @@ public class PromiseHandlerMethodReturnValueHandler implements HandlerMethodRetu
 				});
 
 		WebAsyncUtils.getAsyncManager(webRequest)
-								 .startDeferredResultProcessing(deferredResult, mavContainer);
+		             .startDeferredResultProcessing(deferredResult, mavContainer);
 	}
 
 }

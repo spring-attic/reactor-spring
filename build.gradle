@@ -16,20 +16,27 @@
 description = 'Reactor Spring Components'
 
 ext {
-	gradleVersion = '1.7'
+	gradleVersion = '1.10'
 	gradleScriptDir = "${rootProject.projectDir}/gradle"
 
 	// Languages
-	groovyVersion = '2.1.6'
+	groovyVersion = '2.2.1'
 
 	// Logging
-	slf4jVersion = '1.7.5'
-	logbackVersion = '1.0.13'
+	slf4jVersion = '1.7.6'
+	logbackVersion = '1.1.1'
 
 	// Libraries
-	disruptorVersion = '3.1.1'
-	springVersion = '4.0.0.M2'
-	reactorVersion = '1.0.0.BUILD-SNAPSHOT'
+	disruptorVersion = '3.2.0'
+	springVersion = '4.0.2.RELEASE'
+	reactorVersion = '1.1.0.BUILD-SNAPSHOT'
+	jacksonDatabindVersion = '2.2.3'
+	jsonPathVersion = '0.9.0'
+	kryoVersion = '2.22'
+	protobufVersion = '2.5.0'
+	snappyVersion = '1.1.0.1'
+	openHftChronicleVersion = '2.0.2'
+	openHftLangVersion = '6.1.1'
 
 	// Testing
 	mockitoVersion = '1.9.5'
@@ -39,18 +46,19 @@ ext {
 	jacocoVersion = '0.6.2.201302030002'
 
 	javadocLinks = [
-			"http://docs.oracle.com/javase/7/docs/api/"
+			"http://docs.oracle.com/javase/7/docs/api/",
+			"http://docs.oracle.com/javaee/6/api/",
+			"http://fasterxml.github.com/jackson-core/javadoc/2.2.3/",
+			"http://docs.spring.io/spring/docs/4.0.x/javadoc-api/"
 	] as String[]
 }
 
 buildscript {
 	repositories {
-		maven { url 'https://repo.springsource.org/libs-release' }
-		maven { url "http://repo.springsource.org/plugins-snapshot" }
+		maven { url "http://repo.spring.io/plugins-snapshot" }
 	}
 	dependencies {
-		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.4.1'
-		classpath 'org.ajoberstar:gradle-git:0.4.0'
+		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
 	}
 }
 
@@ -60,6 +68,10 @@ allprojects {
 	apply plugin: 'idea'
 	apply plugin: 'eclipse'
 
+	configurations {
+		jacoco
+	}
+
 	configurations.all {
 		exclude group: "commons-logging"
 		exclude module: "junit"
@@ -68,17 +80,17 @@ allprojects {
 	group = 'org.projectreactor.spring'
 	repositories {
 		mavenLocal()
+		maven { url 'http://repo.spring.io/libs-release' }
+		maven { url 'http://repo.spring.io/libs-milestone' }
+		maven { url 'http://repo.spring.io/libs-snapshot' }
 		mavenCentral()
-		maven { url 'http://repo.springsource.org/libs-release' }
-		maven { url 'http://repo.springsource.org/libs-milestone' }
-		maven { url 'http://repo.springsource.org/plugins-release' }
-		maven { url 'http://repo.springsource.org/libs-snapshot' }
 	}
 }
 
 subprojects { subproject ->
 	apply plugin: 'java'
 	apply plugin: 'groovy'
+	apply plugin: 'maven'
 
 	sourceCompatibility = 1.7
 	targetCompatibility = 1.7
@@ -120,28 +132,17 @@ subprojects { subproject ->
 		archives groovydocJar
 	}
 
-	configurations {
-		jacoco
-	}
-
 	// dependencies that are common across all java projects
 	dependencies {
 		// Logging
 		compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 		// JSR-305 annotations
-		compile("com.google.code.findbugs:jsr305:2.0.0", optional)
-
-		// Spring
-		compile "org.springframework:spring-beans:$springVersion",
-				"org.springframework:spring-context:$springVersion",
-				"org.springframework:spring-context-support:$springVersion",
-				"org.springframework:spring-core:$springVersion",
-				"org.springframework:spring-expression:$springVersion"
+		optional "com.google.code.findbugs:jsr305:2.0.0"
 
 		// Testing
-		testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
-		testCompile "org.spockframework:spock-core:$spockVersion",
+		testCompile "org.codehaus.groovy:groovy-all:$groovyVersion",
+				"org.spockframework:spock-core:$spockVersion",
 				"org.hamcrest:hamcrest-library:1.3",
 				"org.spockframework:spock-spring:$spockVersion",
 				"org.springframework:spring-test:$springVersion"
@@ -161,11 +162,40 @@ subprojects { subproject ->
 	}
 }
 
+project('reactor-spring-core') {
+	description = 'Reactor Spring Core Components'
+	dependencies {
+		// Reactor
+		compile "org.projectreactor:reactor-core:$reactorVersion"
+
+		// Spring
+		compile "org.springframework:spring-beans:$springVersion",
+				"org.springframework:spring-context:$springVersion",
+				"org.springframework:spring-core:$springVersion",
+				"org.springframework:spring-expression:$springVersion"
+
+		// High-speed Messaging
+		optional "net.openhft:chronicle:$openHftChronicleVersion",
+				"net.openhft:lang:$openHftLangVersion"
+
+		// JSON handling
+		optional "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion",
+				"com.jayway.jsonpath:json-path:$jsonPathVersion"
+
+		// Serialization
+		optional "com.esotericsoftware.kryo:kryo:$kryoVersion",
+				"com.google.protobuf:protobuf-java:$protobufVersion",
+				"org.xerial.snappy:snappy-java:$snappyVersion"
+	}
+}
+
 project('reactor-spring-context') {
 	description = 'Reactor Spring Context Components'
 	dependencies {
-		// Reactor
-		compile "org.projectreactor:reactor-spring:$reactorVersion"
+		compile project(':reactor-spring-core')
+
+		// Spring
+		compile "org.springframework:spring-context-support:$springVersion"
 	}
 }
 
@@ -173,10 +203,13 @@ project('reactor-spring-messaging') {
 	description = 'Reactor Spring Messaging Components'
 	dependencies {
 		// Reactor Spring
-		compile project(':reactor-spring-context')
+		compile project(':reactor-spring-context'),
+				"org.projectreactor:reactor-net:$reactorVersion"
 
 		// Spring Messaging
-		compile "org.springframework:spring-messaging:$springVersion"
+		compile("org.springframework:spring-messaging:$springVersion") {
+			exclude group: "org.projectreactor", module: "reactor-tcp"
+		}
 	}
 }
 
@@ -186,7 +219,7 @@ project('reactor-spring-webmvc') {
 		// Reactor Spring
 		compile project(':reactor-spring-context')
 
-		compile('javax.servlet:javax.servlet-api:3.1.0', provided)
+		provided 'javax.servlet:javax.servlet-api:3.1.0'
 
 		// Spring MVC
 		compile "org.springframework:spring-webmvc:$springVersion"
@@ -222,57 +255,6 @@ configure(rootProject) {
 
 		doFirst {
 			classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
-		}
-	}
-}
-
-import org.ajoberstar.gradle.git.tasks.*
-
-task pullDocs(type: GitClone) {
-	if (project.gradle.startParameter.offline) {
-		enabled = false
-	}
-
-	def destination = file("$buildDir/wiki")
-
-	uri = "git://github.com/reactor/reactor.wiki.git"
-	destinationPath = destination
-	bare = false
-
-	doFirst {
-		if (destination.exists()) {
-			destination.deleteDir()
-		}
-	}
-}
-
-import org.asciidoctor.gradle.*
-
-task asciidoctorHtml(type: AsciidoctorTask, dependsOn: [pullDocs]) {
-	sourceDocumentName = file("$buildDir/wiki/Home.asciidoc")
-	sourceDir = file("$buildDir/wiki")
-	outputDir = file("$buildDir/html")
-	backend = "html5"
-	options = [
-			attributes: [
-					docinfo: '',
-					toc2: '',
-					imagesdir: 'images',
-					stylesdir: 'stylesheets',
-					stylesheet: 'golo.css',
-					appversion: "$version",
-					'source-highlighter': 'highlightjs'
-			]
-	]
-
-	doLast {
-		copy {
-			from "$buildDir/wiki/images"
-			into "$buildDir/html/images"
-		}
-		copy {
-			from "$buildDir/wiki/stylesheets"
-			into "$buildDir/html/stylesheets"
 		}
 	}
 }

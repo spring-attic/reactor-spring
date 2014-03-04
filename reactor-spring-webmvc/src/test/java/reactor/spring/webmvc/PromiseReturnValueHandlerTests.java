@@ -46,8 +46,8 @@ public class PromiseReturnValueHandlerTests {
 	@Test
 	public void promiseReturnValueHandlerAwaitsValues() throws Exception {
 		mvc.perform(get("/promise"))
-			 .andExpect(status().isOk())
-			 .andExpect(content().string("Hello World!"));
+		   .andExpect(status().isOk())
+		   .andExpect(content().string("Hello World!"));
 	}
 
 	@Configuration
@@ -57,12 +57,12 @@ public class PromiseReturnValueHandlerTests {
 
 		@Bean
 		public Reactor reactor(Environment env) {
-			return Reactors.reactor().env(env).get();
+			return Reactors.reactor(env);
 		}
 
 		@Override
 		protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
-			returnValueHandlers.add(new PromiseHandlerMethodReturnValueHandler());
+			returnValueHandlers.add(0, new PromiseHandlerMethodReturnValueHandler());
 		}
 
 	}

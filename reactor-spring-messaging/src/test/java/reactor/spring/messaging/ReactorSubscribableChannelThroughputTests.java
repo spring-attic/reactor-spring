@@ -34,9 +34,9 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class ReactorSubscribableChannelTests {
+public class ReactorSubscribableChannelThroughputTests {
 
-	static final Logger LOG  = LoggerFactory.getLogger(ReactorSubscribableChannelTests.class);
+	static final Logger LOG  = LoggerFactory.getLogger(ReactorSubscribableChannelThroughputTests.class);
 	static final int    MSGS = 5000;
 
 	@Autowired
@@ -57,14 +57,21 @@ public class ReactorSubscribableChannelTests {
 	public void cleanup() {
 		end = System.currentTimeMillis();
 		elapsed = end - start;
-		throughput = (int) (MSGS / (elapsed / 1000));
-		LOG.info("Processed {} msgs in {}ms for throughput of {}/sec", MSGS, (long) elapsed, throughput);
+		throughput = (int)(MSGS / (elapsed / 1000));
+		LOG.info("Processed {} msgs in {}ms for throughput of {}/sec", MSGS, (long)elapsed, throughput);
 	}
 
 	@Test
-	public void reactorProcessorChannelThroughputTest() throws InterruptedException {
-		ReactorSubscribableChannel channel = new ReactorSubscribableChannel();
+	public void reactorSubscribableChannelMultiProducerThroughput() throws InterruptedException {
+		doTest(new ReactorSubscribableChannel());
+	}
 
+	@Test
+	public void reactorSubscribableChannelSingleProducerThroughput() throws InterruptedException {
+		doTest(new ReactorSubscribableChannel(true));
+	}
+
+	private void doTest(ReactorSubscribableChannel channel) throws InterruptedException {
 		channel.subscribe(new MessageHandler() {
 			@Override
 			public void handleMessage(Message<?> message) throws MessagingException {
@@ -74,32 +81,10 @@ public class ReactorSubscribableChannelTests {
 
 		Message<?> msg = MessageBuilder.withPayload("Hello World!").build();
 		start = System.currentTimeMillis();
-		for (int i = 0; i < MSGS; i++) {
+		for(int i = 0; i < MSGS; i++) {
 			channel.send(msg);
 		}
-
-		assertTrue("latch did not time out", latch.await(1, TimeUnit.SECONDS));
-	}
-
-	@Test
-	public void reactorChannelThroughputTest() throws InterruptedException {
-		org.springframework.messaging.support.channel.ReactorSubscribableChannel channel =
-				new org.springframework.messaging.support.channel.ReactorSubscribableChannel(reactor);
-
-		channel.subscribe(new MessageHandler() {
-			@Override
-			public void handleMessage(Message<?> message) throws MessagingException {
-				latch.countDown();
-			}
-		});
-
-		Message<?> msg = MessageBuilder.withPayload("Hello World!").build();
-		start = System.currentTimeMillis();
-		for (int i = 0; i < MSGS; i++) {
-			channel.send(msg);
-		}
-
-		assertTrue("latch did not time out", latch.await(1, TimeUnit.SECONDS));
+		assertTrue("latch did not time out", latch.await(5, TimeUnit.SECONDS));
 	}
 
 	@Configuration
@@ -108,7 +93,7 @@ public class ReactorSubscribableChannelTests {
 
 		@Bean
 		public Reactor reactor(Environment env) {
-			return Reactors.reactor().env(env).dispatcher(Environment.RING_BUFFER).get();
+			return Reactors.reactor(env, Environment.RING_BUFFER);
 		}
 
 	}
