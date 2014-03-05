@@ -3,6 +3,7 @@ out
 build
 *.i*
 *.class
+atlassian-ide-plugin.xml
 
 # Package Files #
 *.jar
