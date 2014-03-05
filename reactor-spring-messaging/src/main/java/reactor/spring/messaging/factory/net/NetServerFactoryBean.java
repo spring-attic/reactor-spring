@@ -217,8 +217,9 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * @param messageHandler
 	 * 		the {@link org.springframework.messaging.MessageHandler} to use
 	 */
-	public void setMessageHandler(MessageHandler messageHandler) {
+	public NetServerFactoryBean setMessageHandler(MessageHandler messageHandler) {
 		this.messageHandler = messageHandler;
+		return this;
 	}
 
 	@Override
