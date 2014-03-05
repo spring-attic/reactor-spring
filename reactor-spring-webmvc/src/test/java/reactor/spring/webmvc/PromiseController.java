@@ -24,7 +24,6 @@ public class PromiseController {
 	Reactor     reactor;
 
 	@RequestMapping("/promise")
-	@ResponseBody
 	public Promise<ResponseEntity<String>> get() {
 		Deferred<ResponseEntity<String>, Promise<ResponseEntity<String>>> d = Promises.<ResponseEntity<String>>defer(env);
 
