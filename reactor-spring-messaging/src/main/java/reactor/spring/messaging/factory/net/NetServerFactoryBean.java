@@ -172,6 +172,23 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	}
 
 	/**
+	 * Set the single-byte delimiter to use when framing is set to 'delimited'.
+	 * The options for delimiters are:
+	 * <ul>
+	 * <li>{@code LF} - Means use a line feed \\n.</li>
+	 * <li>{@code CR} - Means use a carriage return \\r.</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param delimiter
+	 * 		the delimiter to use
+	 */
+	public NetServerFactoryBean setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
+		return this;
+	}
+
+	/**
 	 * Set the length of the length field if using length-field framing.
 	 *
 	 * @param lengthFieldLength
@@ -287,6 +304,8 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 			if("delimited".equals(framing)) {
 				if("LF".equals(delimiter)) {
 					framedCodec = new DelimitedCodec(this.codec);
+				} else if("CR".equals(delimiter)) {
+					framedCodec = new DelimitedCodec((byte)'\r', true, this.codec);
 				}
 			} else if("length".equals(framing)) {
 				framedCodec = new LengthFieldCodec(lengthFieldLength, this.codec);
