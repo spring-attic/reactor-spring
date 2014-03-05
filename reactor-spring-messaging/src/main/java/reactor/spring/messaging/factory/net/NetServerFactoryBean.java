@@ -330,7 +330,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 				}
 			};
 			if("tcp".equals(transport)) {
-				TcpServerSpec spec = new TcpServerSpec(serverImpl);
+				TcpServerSpec spec = new TcpServerSpec((null == serverImpl ? NettyTcpServer.class : serverImpl));
 				spec.env(env);
 
 				if(null != dispatcher) { spec.dispatcher(dispatcher); }
@@ -340,7 +340,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 				                        .consume(channelConsumer)
 				                        .get();
 			} else if("udp".equals(transport)) {
-				DatagramServerSpec spec = new DatagramServerSpec(serverImpl);
+				DatagramServerSpec spec = new DatagramServerSpec((null == serverImpl ? NettyDatagramServer.class : serverImpl));
 				spec.env(env);
 
 				if(null != dispatcher) { spec.dispatcher(dispatcher); }
