@@ -2,11 +2,16 @@ package reactor.spring.messaging.factory.net;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.GenericMessage;
 import reactor.core.Environment;
+import reactor.function.Consumer;
 import reactor.io.encoding.Codec;
 import reactor.io.encoding.DelimitedCodec;
 import reactor.io.encoding.LengthFieldCodec;
 import reactor.io.encoding.StandardCodecs;
+import reactor.net.NetChannel;
 import reactor.net.NetServer;
 import reactor.net.encoding.syslog.SyslogCodec;
 import reactor.net.netty.tcp.NettyTcpServer;
@@ -43,6 +48,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	private String delimiter         = "LF";
 	private int    lengthFieldLength = 4;
 	private String transport         = "tcp";
+	private MessageHandler messageHandler;
 
 	public NetServerFactoryBean(Environment env) {this.env = env;}
 
@@ -188,7 +194,8 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * </ul>
 	 * </p>
 	 *
-	 * @param transport the transport to use
+	 * @param transport
+	 * 		the transport to use
 	 *
 	 * @return {@literal this}
 	 */
@@ -202,6 +209,16 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 		}
 		this.transport = transport;
 		return this;
+	}
+
+	/**
+	 * Set the {@link org.springframework.messaging.MessageHandler} that will handle each incoming message.
+	 *
+	 * @param messageHandler
+	 * 		the {@link org.springframework.messaging.MessageHandler} to use
+	 */
+	public void setMessageHandler(MessageHandler messageHandler) {
+		this.messageHandler = messageHandler;
 	}
 
 	@Override
@@ -277,6 +294,21 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 				framedCodec = codec;
 			}
 
+			Consumer<NetChannel> channelConsumer = new Consumer<NetChannel>() {
+				@Override
+				public void accept(NetChannel ch) {
+					ch.consume(new Consumer() {
+						@Override
+						public void accept(Object o) {
+							if(null == messageHandler) {
+								return;
+							}
+							Message<?> msg = new GenericMessage<Object>(o);
+							messageHandler.handleMessage(msg);
+						}
+					});
+				}
+			};
 			if("tcp".equals(transport)) {
 				TcpServerSpec spec = new TcpServerSpec(serverImpl);
 				spec.env(env);
@@ -285,6 +317,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 
 				server = (NetServer)spec.listen(bindAddress.getHostName(), bindAddress.getPort())
 				                        .codec(framedCodec)
+				                        .consume(channelConsumer)
 				                        .get();
 			} else if("udp".equals(transport)) {
 				DatagramServerSpec spec = new DatagramServerSpec(serverImpl);
@@ -294,6 +327,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 
 				server = (NetServer)spec.listen(bindAddress.getHostName(), bindAddress.getPort())
 				                        .codec(framedCodec)
+				                        .consume(channelConsumer)
 				                        .get();
 			}
 		}
