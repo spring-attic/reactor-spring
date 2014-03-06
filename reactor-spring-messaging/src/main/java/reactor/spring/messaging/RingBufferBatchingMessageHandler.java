@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A {@link org.springframework.messaging.MessageHandler} implementation that buffers message payloads until
@@ -24,7 +26,13 @@ import java.util.List;
  *
  * @author Jon Brisbin
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class RingBufferBatchingMessageHandler implements MessageHandler, InitializingBean {
+
+	private static final AtomicLongFieldUpdater<RingBufferBatchingMessageHandler>                      SEQ_START =
+			AtomicLongFieldUpdater.newUpdater(RingBufferBatchingMessageHandler.class, "sequenceStart");
+	private static final AtomicReferenceFieldUpdater<RingBufferBatchingMessageHandler, MessageHeaders> MSG_HDRS  =
+			AtomicReferenceFieldUpdater.newUpdater(RingBufferBatchingMessageHandler.class, MessageHeaders.class, "messageHeaders");
 
 	private final List messagePayloads = new ArrayList();
 
@@ -32,7 +40,7 @@ public class RingBufferBatchingMessageHandler implements MessageHandler, Initial
 	private final int            batchSize;
 	private final RingBuffer     ringBuffer;
 
-	private MessageHeaders messageHeaders;
+	private volatile MessageHeaders messageHeaders;
 	private volatile long sequenceStart = -1;
 
 	/**
@@ -93,11 +101,12 @@ public class RingBufferBatchingMessageHandler implements MessageHandler, Initial
 		// get sequence id
 		long seqId = ringBuffer.next();
 		// if this is the first message of the batch
-		if(null == messageHeaders) {
+		if(null == MSG_HDRS.get(this)) {
 			// save the start id
-			sequenceStart = seqId;
-			// pull the headers from the first message
-			messageHeaders = message.getHeaders();
+			if(SEQ_START.compareAndSet(this, -1, sequenceStart)) {
+				// pull the headers from the first message
+				MSG_HDRS.compareAndSet(this, null, message.getHeaders());
+			}
 		}
 		// add all payloads
 		messagePayloads.add(message.getPayload());
@@ -109,11 +118,11 @@ public class RingBufferBatchingMessageHandler implements MessageHandler, Initial
 			delegate.handleMessage(msg);
 			// clear payloads and headers
 			messagePayloads.clear();
-			messageHeaders = null;
+			MSG_HDRS.compareAndSet(this, messageHeaders, null);
 			// reset ring buffer
 			long start = sequenceStart;
 			ringBuffer.publish(start, seqId);
-			sequenceStart = -1;
+			SEQ_START.compareAndSet(this, sequenceStart, -1);
 		}
 	}
 
