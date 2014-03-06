@@ -5,6 +5,7 @@ import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import reactor.core.Environment;
@@ -22,7 +23,8 @@ import reactor.util.Assert;
  * @author Jon Brisbin
  * @since 1.1
  */
-public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware {
+public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware,
+                                                                                      BeanNameAware {
 
 	private final Logger log = LoggerFactory.getLogger(RingBufferAsyncTaskExecutor.class);
 
@@ -62,6 +64,11 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 				(null != producerType ? producerType : ProducerType.MULTI),
 				(null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
 		);
+	}
+
+	@Override
+	public void setBeanName(String name) {
+		setName(name);
 	}
 
 	@Override
