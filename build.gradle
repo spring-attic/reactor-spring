@@ -23,17 +23,18 @@ ext {
 	groovyVersion = '2.2.1'
 
 	// Logging
-	slf4jVersion = '1.7.6'
 	logbackVersion = '1.1.1'
+	slf4jVersion = '1.7.6'
 
 	// Libraries
+	commonsIoVersion = '2.4'
 	disruptorVersion = '3.2.0'
-	springVersion = '4.0.2.RELEASE'
-	reactorVersion = '1.1.0.M2'
 	jacksonDatabindVersion = '2.2.3'
 	jsonPathVersion = '0.9.0'
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
+	reactorVersion = '1.1.0.M2'
+	springVersion = '4.0.2.RELEASE'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.2'
 	openHftLangVersion = '6.1.1'
@@ -199,8 +200,11 @@ project('reactor-spring-messaging') {
 
 		// Spring Messaging
 		compile("org.springframework:spring-messaging:$springVersion") {
-			exclude group: "org.projectreactor", module: "reactor-tcp"
+			exclude group: "org.projectreactor.spring", module: "reactor-net"
 		}
+
+		testCompile "com.esotericsoftware.kryo:kryo:$kryoVersion",
+				"commons-io:commons-io:$commonsIoVersion"
 	}
 }
 
