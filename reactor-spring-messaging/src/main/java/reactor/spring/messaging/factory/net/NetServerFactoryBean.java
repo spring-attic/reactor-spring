@@ -16,15 +16,18 @@ import reactor.net.NetServer;
 import reactor.net.encoding.syslog.SyslogCodec;
 import reactor.net.netty.tcp.NettyTcpServer;
 import reactor.net.netty.udp.NettyDatagramServer;
-import reactor.net.tcp.spec.TcpServerSpec;
-import reactor.net.udp.spec.DatagramServerSpec;
+import reactor.net.spec.NetServerSpec;
+import reactor.net.tcp.TcpServer;
+import reactor.net.tcp.spec.TcpServers;
+import reactor.net.udp.DatagramServer;
+import reactor.net.udp.spec.DatagramServers;
 import reactor.util.Assert;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} for creating Reactor a {@link reactor.net.NetServer}.
+ * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.net.NetServer}.
  *
  * @author Jon Brisbin
  */
@@ -329,27 +332,28 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 					});
 				}
 			};
+
+			NetServerSpec spec;
 			if("tcp".equals(transport)) {
-				TcpServerSpec spec = new TcpServerSpec((null == serverImpl ? NettyTcpServer.class : serverImpl));
-				spec.env(env);
-
-				if(null != dispatcher) { spec.dispatcher(dispatcher); }
-
-				server = (NetServer)spec.listen(bindAddress.getHostName(), bindAddress.getPort())
-				                        .codec(framedCodec)
-				                        .consume(channelConsumer)
-				                        .get();
+				spec = TcpServers.create(env,
+				                         null == serverImpl
+				                         ? NettyTcpServer.class
+				                         : (Class<? extends TcpServer>)serverImpl);
 			} else if("udp".equals(transport)) {
-				DatagramServerSpec spec = new DatagramServerSpec((null == serverImpl ? NettyDatagramServer.class : serverImpl));
-				spec.env(env);
-
-				if(null != dispatcher) { spec.dispatcher(dispatcher); }
-
-				server = (NetServer)spec.listen(bindAddress.getHostName(), bindAddress.getPort())
-				                        .codec(framedCodec)
-				                        .consume(channelConsumer)
-				                        .get();
+				spec = DatagramServers.create(env,
+				                              null == serverImpl
+				                              ? NettyDatagramServer.class
+				                              : (Class<? extends DatagramServer>)serverImpl);
+			} else {
+				throw new IllegalArgumentException(transport + " not recognized as a valid transport type.");
 			}
+
+			if(null != dispatcher) { spec.dispatcher(dispatcher); }
+
+			server = (NetServer)spec.listen(bindAddress)
+			                        .codec(framedCodec)
+			                        .consume(channelConsumer)
+			                        .get();
 		}
 		return server;
 	}

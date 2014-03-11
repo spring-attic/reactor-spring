@@ -33,7 +33,7 @@ ext {
 	jsonPathVersion = '0.9.0'
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
-	reactorVersion = '1.1.0.M2'
+	reactorVersion = '1.1.0.BUILD-SNAPSHOT'
 	springVersion = '4.0.2.RELEASE'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.2'
