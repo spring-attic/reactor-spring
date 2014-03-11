@@ -81,7 +81,7 @@ allprojects {
 
 	group = 'org.projectreactor.spring'
 	repositories {
-		mavenLocal()
+		//mavenLocal()
 		maven { url 'http://repo.spring.io/libs-release' }
 		maven { url 'http://repo.spring.io/libs-milestone' }
 		maven { url 'http://repo.spring.io/libs-snapshot' }
