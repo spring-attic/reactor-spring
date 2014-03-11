@@ -32,17 +32,23 @@ import static org.hamcrest.Matchers.is;
 public class RingBufferBatchingMessageHandlerTests {
 
 	static int  RING_BUFFER_SIZE = 1024;
-	static long TIMEOUT          = 1000;
+	static long TIMEOUT          = 5000;
 	static int  MSG_COUNT        = 5000;
 
 	@Autowired
 	SubscribableChannel output;
 
 	AtomicLong counter;
+	Kryo       kryo;
+	Output     kryoOut;
 
 	@Before
 	public void setup() {
 		counter = new AtomicLong(0);
+
+		kryo = new Kryo();
+		kryo.setAutoReset(true);
+		kryoOut = new Output(new NullOutputStream());
 	}
 
 	@Test
@@ -70,25 +76,17 @@ public class RingBufferBatchingMessageHandlerTests {
 	public void testBatchMessageHandlerThroughput() {
 		MessageHandler batcher = new RingBufferBatchingMessageHandler(
 				new MessageHandler() {
+					@SuppressWarnings("unchecked")
 					@Override
 					public void handleMessage(Message<?> message) throws MessagingException {
-						counter.addAndGet(((List)message.getPayload()).size());
+						List<String> payload = (List<String>)message.getPayload();
+						counter.addAndGet(payload.size());
 					}
 				},
-				RING_BUFFER_SIZE
+				RING_BUFFER_SIZE * 4
 		);
-		output.subscribe(batcher);
 
-		Message<?> msg = new GenericMessage<Object>("Hello World!");
-		long start = System.currentTimeMillis();
-		while(System.currentTimeMillis() - start < TIMEOUT) {
-			output.send(msg);
-		}
-		long end = System.currentTimeMillis();
-		double elapsed = end - start;
-		int throughput = (int)(counter.get() / (elapsed / 1000));
-
-		System.out.format("batch handler throughput: %s/sec%n", throughput);
+		doThroughputTest("batch handler", batcher);
 	}
 
 	@Test
@@ -99,6 +97,43 @@ public class RingBufferBatchingMessageHandlerTests {
 				counter.incrementAndGet();
 			}
 		};
+
+		doThroughputTest("single handler", handler);
+	}
+
+	@Test
+	public void testSingleMessageSerializerThroughput() {
+		MessageHandler handler = new MessageHandler() {
+			@Override
+			public void handleMessage(Message<?> message) throws MessagingException {
+				String payload = (String)message.getPayload();
+				kryo.writeClassAndObject(kryoOut, payload);
+				counter.incrementAndGet();
+			}
+		};
+
+		doThroughputTest("single msg serializing kryo handler", handler);
+	}
+
+	@Test
+	public void testBatchMessageHandlerSerializerThroughput() {
+		MessageHandler batcher = new RingBufferBatchingMessageHandler(
+				new MessageHandler() {
+					@SuppressWarnings("unchecked")
+					@Override
+					public void handleMessage(Message<?> message) throws MessagingException {
+						List<String> payload = (List<String>)message.getPayload();
+						kryo.writeClassAndObject(kryoOut, payload);
+						counter.addAndGet(payload.size());
+					}
+				},
+				RING_BUFFER_SIZE * 4
+		);
+
+		doThroughputTest("batching serializing kryo handler", batcher);
+	}
+
+	private void doThroughputTest(String type, MessageHandler handler) {
 		output.subscribe(handler);
 
 		Message<?> msg = new GenericMessage<Object>("Hello World!");
@@ -110,36 +145,7 @@ public class RingBufferBatchingMessageHandlerTests {
 		double elapsed = end - start;
 		int throughput = (int)(counter.get() / (elapsed / 1000));
 
-		System.out.format("single handler throughput: %s/sec%n", throughput);
-	}
-
-	@Test
-	public void testBatchMessageHandlerSerializerThroughput() {
-		final Kryo kryo = new Kryo();
-		final Output kryoOut = new Output(new NullOutputStream());
-
-		MessageHandler batcher = new RingBufferBatchingMessageHandler(
-				new MessageHandler() {
-					@Override
-					public void handleMessage(Message<?> message) throws MessagingException {
-						kryo.writeObject(kryoOut, message);
-						counter.addAndGet(((List)message.getPayload()).size());
-					}
-				},
-				RING_BUFFER_SIZE
-		);
-		output.subscribe(batcher);
-
-		Message<?> msg = new GenericMessage<Object>("Hello World!");
-		long start = System.currentTimeMillis();
-		while(System.currentTimeMillis() - start < TIMEOUT) {
-			output.send(msg);
-		}
-		long end = System.currentTimeMillis();
-		double elapsed = end - start;
-		int throughput = (int)(counter.get() / (elapsed / 1000));
-
-		System.out.format("serializing kryo handler throughput: %s/sec%n", throughput);
+		System.out.format("%s throughput: %s/s%n", type, throughput);
 	}
 
 	@Configuration
