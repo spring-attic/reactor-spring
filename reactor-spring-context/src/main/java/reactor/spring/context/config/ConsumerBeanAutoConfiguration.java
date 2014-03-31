@@ -23,6 +23,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import reactor.core.Observable;
 import reactor.event.Event;
+import reactor.event.selector.Selectors;
 import reactor.function.Consumer;
 import reactor.function.Function;
 import reactor.spring.context.annotation.ReplyTo;
@@ -61,7 +62,8 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConsumerBeanAutoConfiguration.class);
 
-	private Map<String, Boolean> wiredBeans = new HashMap<String, Boolean>();
+	private reactor.event.selector.Selector defaultSelector = Selectors.anonymous();
+	private Map<String, Boolean>            wiredBeans      = new HashMap<String, Boolean>();
 
 	private ApplicationContext            appCtx;
 	private BeanResolver                  beanResolver;
@@ -87,19 +89,19 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent ev) {
 		ApplicationContext ctx = ev.getApplicationContext();
-		if(ctx != appCtx) {
+		if (ctx != appCtx) {
 			return;
 		}
 
-		if(null == beanResolver) {
+		if (null == beanResolver) {
 			beanResolver = new BeanFactoryResolver(ctx);
 		}
 
-		if(null == conversionService) {
+		if (null == conversionService) {
 			try {
 				conversionService = ctx.getBean(REACTOR_CONVERSION_SERVICE_BEAN_NAME, ConversionService.class);
-			} catch(BeansException be) {
-				if(LOG.isDebugEnabled()) {
+			} catch (BeansException be) {
+				if (LOG.isDebugEnabled()) {
 					LOG.debug(REACTOR_CONVERSION_SERVICE_BEAN_NAME + " has not been found in the context. Skipping.");
 				}
 			}
@@ -107,34 +109,34 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 		Set<Method> methods = new HashSet<Method>();
 		Class<?> type;
-		for(String beanName : ctx.getBeanDefinitionNames()) {
+		for (String beanName : ctx.getBeanDefinitionNames()) {
 			type = ctx.getType(beanName);
-			if(null == AnnotationUtils.findAnnotation(type, reactor.spring.context.annotation.Consumer.class)) {
+			if (null == AnnotationUtils.findAnnotation(type, reactor.spring.context.annotation.Consumer.class)) {
 				wiredBeans.put(beanName, Boolean.FALSE);
 				continue;
 			}
-			if(wiredBeans.containsKey(beanName)) {
+			if (wiredBeans.containsKey(beanName)) {
 				continue;
 			}
 
 			try {
-				if(Function.class.isAssignableFrom(type)) {
+				if (Function.class.isAssignableFrom(type)) {
 					methods.add(type.getDeclaredMethod("apply"));
-				} else if(Consumer.class.isAssignableFrom(type)) {
+				} else if (Consumer.class.isAssignableFrom(type)) {
 					methods.add(type.getDeclaredMethod("accept"));
 				} else {
 					methods.addAll(findHandlerMethods(type, CONSUMER_METHOD_FILTER));
 				}
 				wireBean(ctx.getBean(beanName), methods);
 				wiredBeans.put(beanName, Boolean.TRUE);
-			} catch(NoSuchMethodException ignored) {
+			} catch (NoSuchMethodException ignored) {
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void wireBean(final Object bean, final Set<Method> methods) {
-		if(methods.isEmpty()) {
+		if (methods.isEmpty()) {
 			return;
 		}
 
@@ -144,7 +146,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		ReplyTo replyToAnno;
 		reactor.event.selector.Selector selector;
 
-		for(final Method method : methods) {
+		for (final Method method : methods) {
 			//scanAnnotation method
 			selectorAnno = AnnotationUtils.findAnnotation(method, Selector.class);
 			replyToAnno = AnnotationUtils.findAnnotation(method, ReplyTo.class);
@@ -155,15 +157,15 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			Object replyTo = replyToAnno != null ? parseReplyTo(replyToAnno, bean) : null;
 			Invoker handler = new Invoker(method, bean, conversionService);
 			consumer = null != replyToAnno ?
-			           new ReplyToServiceConsumer(reactor, replyTo, handler) :
-			           new ServiceConsumer(handler);
+					new ReplyToServiceConsumer(reactor, replyTo, handler) :
+					new ServiceConsumer(handler);
 
-			if(LOG.isDebugEnabled()) {
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Attaching Consumer to Reactor[" + reactor + "] using Selector[" + selector + "]");
 			}
 
-			if(null == selector) {
-				reactor.on(consumer);
+			if (null == selector) {
+				throw new IllegalArgumentException("Selector cannot be null");
 			} else {
 				reactor.on(selector, consumer);
 			}
@@ -172,7 +174,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 	@SuppressWarnings("unchecked")
 	private <T> T expression(String selector, Object bean) {
-		if(selector == null) {
+		if (selector == null) {
 			return null;
 		}
 
@@ -180,7 +182,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		evalCtx.setBeanResolver(beanResolver);
 		evalCtx.setPropertyAccessors(expressionPropertyAccessors);
 
-		return (T)expressionParser.parseExpression(selector).getValue(evalCtx);
+		return (T) expressionParser.parseExpression(selector).getValue(evalCtx);
 	}
 
 	private Observable fetchObservable(Selector selectorAnno, Object bean) {
@@ -188,24 +190,24 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 	}
 
 	private Object parseSelector(Selector selector, Object bean, Method method) {
-		if(!StringUtils.hasText(selector.value())) {
+		if (!StringUtils.hasText(selector.value())) {
 			return method.getName();
 		}
 
 		try {
 			return expression(selector.value(), bean);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			return selector.value();
 		}
 	}
 
 	private Object parseReplyTo(ReplyTo selector, Object bean) {
-		if(StringUtils.isEmpty(selector.value())) {
+		if (StringUtils.isEmpty(selector.value())) {
 			return null;
 		}
 		try {
 			return expression(selector.value(), bean);
-		} catch(EvaluationException ee) {
+		} catch (EvaluationException ee) {
 			return selector.value();
 		}
 	}
@@ -213,7 +215,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 	private reactor.event.selector.Selector fetchSelector(Selector selectorAnno, Object bean, Method method) {
 		Object sel = parseSelector(selectorAnno, bean, method);
 		try {
-			switch(selectorAnno.type()) {
+			switch (selectorAnno.type()) {
 				case OBJECT:
 					return object(sel);
 				case REGEX:
@@ -223,14 +225,14 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 				case TYPE:
 					try {
 						return type(Class.forName(sel.toString()));
-					} catch(ClassNotFoundException e) {
+					} catch (ClassNotFoundException e) {
 						throw new IllegalArgumentException(e.getMessage(), e);
 					}
 				case JSON_PATH:
 					return jsonPathSelector(sel.toString());
 			}
-		} catch(EvaluationException e) {
-			if(LOG.isTraceEnabled()) {
+		} catch (EvaluationException e) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Creating ObjectSelector for '" + sel + "' due to " + e.getMessage(), e);
 			}
 		}
@@ -265,7 +267,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		public void accept(Event ev) {
 			Object result = handler.apply(ev);
 			Object _replyToKey = replyToKey != null ? replyToKey : ev.getReplyTo();
-			if(_replyToKey != null) {
+			if (_replyToKey != null) {
 				reactor.notify(_replyToKey, Event.wrap(result));
 			}
 		}
@@ -316,39 +318,39 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 		@Override
 		public Object apply(Event ev) {
-			if(argTypes.length == 0) {
-				if(LOG.isDebugEnabled()) {
+			if (argTypes.length == 0) {
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Invoking method[" + method + "] on " + bean.getClass() + " using " + ev);
 				}
 				return ReflectionUtils.invokeMethod(method, bean);
 			}
 
-			if(argTypes.length > 1) {
+			if (argTypes.length > 1) {
 				throw new IllegalStateException("Multiple parameters not yet supported.");
 			}
 
-			if(Event.class.isAssignableFrom(argTypes[0])) {
-				if(LOG.isDebugEnabled()) {
+			if (Event.class.isAssignableFrom(argTypes[0])) {
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Invoking method[" + method + "] on " + bean.getClass() + " using " + ev);
 				}
 				return ReflectionUtils.invokeMethod(method, bean, ev);
 			}
 
-			if(null == ev.getData() || argTypes[0].isAssignableFrom(ev.getData().getClass())) {
-				if(LOG.isDebugEnabled()) {
+			if (null == ev.getData() || argTypes[0].isAssignableFrom(ev.getData().getClass())) {
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Invoking method[" + method + "] on " + bean.getClass() + " using " + ev.getData());
 				}
 				return ReflectionUtils.invokeMethod(method, bean, ev.getData());
 			}
 
-			if(!argTypes[0].isAssignableFrom(ev.getClass())
+			if (!argTypes[0].isAssignableFrom(ev.getClass())
 					&& conversionService.canConvert(ev.getClass(), argTypes[0])) {
 				ReflectionUtils.invokeMethod(method, bean, conversionService.convert(ev, argTypes[0]));
 			}
 
-			if(conversionService.canConvert(ev.getData().getClass(), argTypes[0])) {
+			if (conversionService.canConvert(ev.getData().getClass(), argTypes[0])) {
 				Object convertedObj = conversionService.convert(ev.getData(), argTypes[0]);
-				if(LOG.isDebugEnabled()) {
+				if (LOG.isDebugEnabled()) {
 					LOG.debug("Invoking method[" + method + "] on " + bean.getClass() + " using " + convertedObj);
 				}
 				return ReflectionUtils.invokeMethod(method, bean, convertedObj);
@@ -377,7 +379,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			try {
 				Object obj = fld.get(target);
 				return new TypedValue(obj, TypeDescriptor.forObject(obj));
-			} catch(IllegalAccessException e) {
+			} catch (IllegalAccessException e) {
 				throw new AccessException(e.getMessage(), e);
 			}
 		}
@@ -392,20 +394,20 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			Field fld = findField(target, name);
 			try {
 				fld.set(target, newValue);
-			} catch(IllegalAccessException e) {
+			} catch (IllegalAccessException e) {
 				throw new AccessException(e.getMessage(), e);
 			}
 		}
 
 		private Field findField(Object target, final String name) {
 			final int cacheKey = target.hashCode() & name.hashCode();
-			if(!fieldCache.containsKey(cacheKey)) {
+			if (!fieldCache.containsKey(cacheKey)) {
 				ReflectionUtils.doWithFields(
 						target.getClass(),
 						new ReflectionUtils.FieldCallback() {
 							@Override
 							public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-								if(name.equals(field.getName())) {
+								if (name.equals(field.getName())) {
 									ReflectionUtils.makeAccessible(field);
 									fieldCache.put(cacheKey, field);
 								}
@@ -421,25 +423,25 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 	                                              final ReflectionUtils.MethodFilter handlerMethodFilter) {
 		final Set<Method> handlerMethods = new LinkedHashSet<Method>();
 
-		if(handlerType == null) {
+		if (handlerType == null) {
 			return handlerMethods;
 		}
 
 		Set<Class<?>> handlerTypes = new LinkedHashSet<Class<?>>();
 		Class<?> specificHandlerType = null;
-		if(!Proxy.isProxyClass(handlerType)) {
+		if (!Proxy.isProxyClass(handlerType)) {
 			handlerTypes.add(handlerType);
 			specificHandlerType = handlerType;
 		}
 		handlerTypes.addAll(Arrays.asList(handlerType.getInterfaces()));
-		for(Class<?> currentHandlerType : handlerTypes) {
+		for (Class<?> currentHandlerType : handlerTypes) {
 			final Class<?> targetClass = (specificHandlerType != null ? specificHandlerType : currentHandlerType);
 			ReflectionUtils.doWithMethods(currentHandlerType, new ReflectionUtils.MethodCallback() {
 				@Override
 				public void doWith(Method method) {
 					Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);
 					Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
-					if(handlerMethodFilter.matches(specificMethod) &&
+					if (handlerMethodFilter.matches(specificMethod) &&
 							(bridgedMethod == specificMethod || !handlerMethodFilter.matches(bridgedMethod))) {
 						handlerMethods.add(specificMethod);
 					}

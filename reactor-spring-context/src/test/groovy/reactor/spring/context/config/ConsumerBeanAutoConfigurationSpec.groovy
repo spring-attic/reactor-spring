@@ -24,6 +24,7 @@ import reactor.core.Reactor
 import reactor.event.Event
 import reactor.spring.context.annotation.Consumer
 import reactor.spring.context.annotation.Selector
+import reactor.spring.context.annotation.SelectorType
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -38,18 +39,18 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 	def "Annotated Consumer is wired to a Reactor"() {
 
 		given:
-			"an ApplicationContext with an annotated bean handler"
-			def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
-			def handlerBean = appCtx.getBean(HandlerBean)
-			def reactor = appCtx.getBean(Reactor)
+		"an ApplicationContext with an annotated bean handler"
+		def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+		def handlerBean = appCtx.getBean(HandlerBean)
+		def reactor = appCtx.getBean(Reactor)
 
 		when:
-			"an Event is emitted onto the Reactor in context"
-			reactor.notify('test', Event.wrap("Hello World!"))
+		"an Event is emitted onto the Reactor in context"
+		reactor.notify('/a/b', Event.wrap("Hello World!"))
 
 		then:
-			"the method has been invoked"
-			handlerBean.latch.await(1, TimeUnit.SECONDS)
+		"the method has been invoked"
+		handlerBean.latch.await(1, TimeUnit.SECONDS)
 
 	}
 
@@ -61,8 +62,9 @@ class HandlerBean {
 	Reactor reactor
 	def latch = new CountDownLatch(1)
 
-	@Selector('test')
-	void handleTest(String s) {
+	@Selector(value = '/{a}/{b}', type = SelectorType.URI)
+	void handleTest(Event<String> ev) {
+		//println "a=${ev.headers['a']}, b=${ev.headers['b']}"
 		latch.countDown()
 	}
 }
