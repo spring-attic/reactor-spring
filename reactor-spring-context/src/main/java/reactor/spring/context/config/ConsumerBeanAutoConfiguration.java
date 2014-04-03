@@ -107,10 +107,10 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			}
 		}
 
-		Set<Method> methods = new HashSet<Method>();
-		Class<?> type;
 		for (String beanName : ctx.getBeanDefinitionNames()) {
-			type = ctx.getType(beanName);
+			Set<Method> methods = new HashSet<Method>();
+			Class<?> type = ctx.getType(beanName);
+
 			if (null == AnnotationUtils.findAnnotation(type, reactor.spring.context.annotation.Consumer.class)) {
 				wiredBeans.put(beanName, Boolean.FALSE);
 				continue;
