@@ -29,10 +29,11 @@ import java.lang.annotation.*;
 public @interface Selector {
 
 	/**
-	 * An expression that evaluates to a {@link reactor.event.selector.Selector} to register this handler with the {@link
+	 * An expression that evaluates to a {@link reactor.event.selector.Selector} to register
+     * this handler with the {@link
 	 * reactor.core.Reactor}.
 	 * If empty, consumer will be subscribed on the global reactor selector
-	 * {@link reactor.core.Reactor#on(reactor.function.Consumer)}
+	 * {@link reactor.core.Reactor#on(reactor.event.selector.Selector selector, reactor.function.Consumer)}
 	 *
 	 * @return An expression to be evaluated.
 	 */

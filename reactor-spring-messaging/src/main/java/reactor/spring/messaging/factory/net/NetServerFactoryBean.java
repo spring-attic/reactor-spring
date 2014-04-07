@@ -132,7 +132,6 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code string} - Use the standard String codec.</li>
 	 * <li>{@code syslog} - Use the standard Syslog codec.</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param codec
 	 * 		the codec
@@ -161,7 +160,6 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code length} - Means use a length-field based codec where the initial bytes of a message are the length of
 	 * the rest of the message.</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param framing
 	 * 		type of framing
@@ -181,7 +179,6 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code LF} - Means use a line feed \\n.</li>
 	 * <li>{@code CR} - Means use a carriage return \\r.</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param delimiter
 	 * 		the delimiter to use
@@ -212,7 +209,6 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code tcp} - Use the built-in Netty TCP support.</li>
 	 * <li>{@code udp} - Use the built-in Netty UDP support.</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param transport
 	 * 		the transport to use
