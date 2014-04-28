@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
 import reactor.core.Environment
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.util.concurrent.Callable
@@ -62,6 +63,7 @@ class TaskExecutorsSpec extends Specification {
 
 	}
 
+	@Ignore
 	def "Work queue executor is performant"() {
 
 		when: "a Closure is submitted"
