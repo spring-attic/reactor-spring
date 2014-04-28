@@ -4,8 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.core.task.AsyncTaskExecutor;
-import reactor.core.Environment;
+import org.springframework.core.task.AsyncListenableTaskExecutor;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureTask;
 import reactor.event.dispatch.AbstractLifecycleDispatcher;
 import reactor.event.registry.Registration;
 import reactor.function.Consumer;
@@ -26,12 +27,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 1.1
  */
 public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorService,
-                                                           AsyncTaskExecutor,
+                                                           AsyncListenableTaskExecutor,
                                                            InitializingBean,
                                                            SmartLifecycle {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	private final Timer       timer;
+	private final Timer timer;
 
 	private String name    = getClass().getSimpleName();
 	private int    threads = Runtime.getRuntime().availableProcessors();
@@ -170,7 +171,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	                                             ExecutionException,
 	                                             TimeoutException {
 		List<FutureTask<T>> submittedTasks = new ArrayList<FutureTask<T>>();
-		for(Callable<T> task : tasks) {
+		for (Callable<T> task : tasks) {
 			FutureTask<T> ft = new FutureTask<T>(task);
 			execute(ft);
 			submittedTasks.add(ft);
@@ -178,19 +179,19 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 		T result = null;
 		long start = System.currentTimeMillis();
-		for(; ; ) {
-			for(FutureTask<T> task : submittedTasks) {
+		for (; ; ) {
+			for (FutureTask<T> task : submittedTasks) {
 				result = task.get(100, TimeUnit.MILLISECONDS);
-				if(null != result || task.isDone()) {
+				if (null != result || task.isDone()) {
 					break;
 				}
 			}
-			if(null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
+			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
 				break;
 			}
 		}
-		for(FutureTask<T> task : submittedTasks) {
-			if(!task.isDone()) {
+		for (FutureTask<T> task : submittedTasks) {
+			if (!task.isDone()) {
 				task.cancel(true);
 			}
 		}
@@ -202,7 +203,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	                                                                       ExecutionException {
 		try {
 			return invokeAny(tasks, Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} catch(TimeoutException e) {
+		} catch (TimeoutException e) {
 			throw new ExecutionException(e.getMessage(), e);
 		}
 	}
@@ -212,7 +213,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	                                     long timeout,
 	                                     TimeUnit unit) throws InterruptedException {
 		List<Future<T>> submittedTasks = new ArrayList<Future<T>>();
-		for(Callable<T> task : tasks) {
+		for (Callable<T> task : tasks) {
 			FutureTask<T> ft = new FutureTask<T>(task);
 			execute(ft);
 			submittedTasks.add(ft);
@@ -220,21 +221,21 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 		T result = null;
 		long start = System.currentTimeMillis();
-		for(; ; ) {
+		for (; ; ) {
 			boolean allComplete = false;
-			for(Future<T> task : submittedTasks) {
+			for (Future<T> task : submittedTasks) {
 				try {
 					result = task.get(100, TimeUnit.MILLISECONDS);
-				} catch(ExecutionException e) {
+				} catch (ExecutionException e) {
 					log.error(e.getMessage(), e);
-				} catch(TimeoutException e) {
+				} catch (TimeoutException e) {
 					log.error(e.getMessage(), e);
 				}
-				if(allComplete = !allComplete && task.isDone()) {
+				if (allComplete = !allComplete && task.isDone()) {
 					break;
 				}
 			}
-			if(null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
+			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
 				break;
 			}
 		}
@@ -279,6 +280,20 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 		FutureTask<T> future = new FutureTask<T>(task, result);
 		execute(future);
 		return future;
+	}
+
+	@Override
+	public ListenableFuture<?> submitListenable(Runnable task) {
+		ListenableFutureTask<?> f = new ListenableFutureTask<Object>(task, null);
+		submit(f);
+		return f;
+	}
+
+	@Override
+	public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
+		ListenableFutureTask<T> f = new ListenableFutureTask<T>(task);
+		submit(f);
+		return f;
 	}
 
 	@Override
@@ -330,10 +345,10 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 			public void run() {
 				try {
 					command.run();
-				} catch(Throwable t) {
+				} catch (Throwable t) {
 					log.error(t.getMessage(), t);
 					Registration reg;
-					if(null != (reg = registration.get())) {
+					if (null != (reg = registration.get())) {
 						reg.cancel();
 					}
 				}
@@ -374,10 +389,10 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 						try {
 							future.run();
 							timer.submit(self, delayInMs, TimeUnit.MILLISECONDS);
-						} catch(Throwable t) {
+						} catch (Throwable t) {
 							log.error(t.getMessage(), t);
 							Registration reg;
-							if(null != (reg = registration.get())) {
+							if (null != (reg = registration.get())) {
 								reg.cancel();
 							}
 						}
@@ -393,7 +408,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	protected abstract AbstractLifecycleDispatcher getDispatcher();
 
 	private static long convertToMillis(long l, TimeUnit timeUnit) {
-		if(timeUnit == TimeUnit.MILLISECONDS) {
+		if (timeUnit == TimeUnit.MILLISECONDS) {
 			return l;
 		} else {
 			return timeUnit.convert(l, TimeUnit.MILLISECONDS);
@@ -420,7 +435,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 		@Override
 		public int compareTo(Delayed d) {
-			if(this == d) {
+			if (this == d) {
 				return 0;
 			}
 			long diff = getDelay(TimeUnit.MILLISECONDS) - d.getDelay(TimeUnit.MILLISECONDS);
