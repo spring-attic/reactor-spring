@@ -20,11 +20,11 @@ ext {
 	gradleScriptDir = "${rootProject.projectDir}/gradle"
 
 	// Languages
-	groovyVersion = '2.2.1'
+	groovyVersion = '2.2.2'
 
 	// Logging
-	logbackVersion = '1.1.1'
 	slf4jVersion = '1.7.6'
+	logbackVersion = '1.1.1'
 
 	// Libraries
 	commonsIoVersion = '2.4'
@@ -33,7 +33,7 @@ ext {
 	jsonPathVersion = '0.9.0'
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
-	reactorVersion = '1.1.0.M3'
+	reactorVersion = '1.1.0.RC1'
 	springVersion = '4.0.3.RELEASE'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.3'
