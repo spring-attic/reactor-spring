@@ -7,7 +7,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
 import reactor.core.Environment;
 import reactor.core.configuration.PropertiesConfigurationReader;
-import reactor.core.support.DefaultEnvironmentSupplier;
 import reactor.function.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
@@ -47,7 +46,12 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 						}
 					};
 				} else {
-					envSupplier = new DefaultEnvironmentSupplier();
+					envSupplier = new Supplier<Environment>() {
+						@Override
+						public Environment get() {
+							return new Environment();
+						}
+					};
 				}
 				envBeanDef.addConstructorArgValue(envSupplier);
 			}
