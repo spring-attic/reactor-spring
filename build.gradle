@@ -57,10 +57,11 @@ ext {
 
 buildscript {
 	repositories {
-		maven { url "http://repo.spring.io/plugins-snapshot" }
+		maven { url "http://repo.spring.io/plugins-release" }
 	}
 	dependencies {
 		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
+		classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
 	}
 }
 
@@ -93,6 +94,7 @@ subprojects { subproject ->
 	apply plugin: 'java'
 	apply plugin: 'groovy'
 	apply plugin: 'maven'
+	apply plugin: 'spring-io'
 
 	sourceCompatibility = 1.7
 	targetCompatibility = 1.7
@@ -153,6 +155,8 @@ subprojects { subproject ->
 
 		// Code coverage
 		jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
+		springIoVersions 'io.spring.platform:platform-versions:1.0.0.BUILD-SNAPSHOT@properties'
 	}
 
 	test {
