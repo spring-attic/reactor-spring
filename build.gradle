@@ -166,8 +166,6 @@ subprojects { subproject ->
 
 		// Code coverage
 		jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
-
-		springIoVersions 'io.spring.platform:platform-versions:1.0.0.BUILD-SNAPSHOT@properties'
 	}
 
 	test {
