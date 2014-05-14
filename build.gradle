@@ -94,7 +94,18 @@ subprojects { subproject ->
 	apply plugin: 'java'
 	apply plugin: 'groovy'
 	apply plugin: 'maven'
-	apply plugin: 'spring-io'
+
+	if (project.hasProperty('platformVersion')) {
+		apply plugin: 'spring-io'
+
+		repositories {
+			maven { url 'http://repo.spring.io/libs-snapshot' }
+		}
+
+		dependencies {
+			springIoVersions "io.spring.platform:platform-versions:$platformVersion@properties"
+		}
+	}
 
 	sourceCompatibility = 1.7
 	targetCompatibility = 1.7
