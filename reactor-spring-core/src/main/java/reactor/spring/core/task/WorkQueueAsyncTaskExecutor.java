@@ -51,7 +51,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 				new Consumer<Throwable>() {
 					@Override
 					public void accept(Throwable throwable) {
-						if(null != eventPublisher) {
+						if (null != eventPublisher) {
 							eventPublisher.publishEvent(new AsyncTaskExceptionEvent(throwable));
 						} else {
 							log.error(throwable.getMessage(), throwable);
@@ -62,22 +62,6 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 				(null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
 		);
 	}
-
-	@Override
-	public WorkQueueAsyncTaskExecutor setName(String name) {
-		return (WorkQueueAsyncTaskExecutor)super.setName(name);
-	}
-
-	@Override
-	public WorkQueueAsyncTaskExecutor setThreads(int threads) {
-		return (WorkQueueAsyncTaskExecutor)super.setThreads(threads);
-	}
-
-	@Override
-	public WorkQueueAsyncTaskExecutor setBacklog(int backlog) {
-		return (WorkQueueAsyncTaskExecutor)super.setBacklog(backlog);
-	}
-
 
 	/**
 	 * Get the {@link com.lmax.disruptor.dsl.ProducerType} this {@link com.lmax.disruptor.RingBuffer} is using.
@@ -97,9 +81,8 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	 *
 	 * @return {@literal this}
 	 */
-	public WorkQueueAsyncTaskExecutor setProducerType(ProducerType producerType) {
+	public void setProducerType(ProducerType producerType) {
 		this.producerType = producerType;
-		return this;
 	}
 
 	/**
@@ -120,9 +103,8 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	 *
 	 * @return {@literal this}
 	 */
-	public WorkQueueAsyncTaskExecutor setWaitStrategy(WaitStrategy waitStrategy) {
+	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;
-		return this;
 	}
 
 	@Override

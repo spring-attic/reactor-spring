@@ -55,8 +55,8 @@ class TaskExecutorsSpec extends Specification {
 
 		when: "a value-returning task is submitted"
 			def f = workQueue.submit({
-				return "Hello World!"
-			} as Callable)
+																 return "Hello World!"
+															 } as Callable)
 
 		then: "the Future blocks until completion and the value is returned"
 			f.get(1, TimeUnit.SECONDS) == "Hello World!"
@@ -95,10 +95,10 @@ class TaskExecutorsSpec extends Specification {
 
 		@Bean
 		WorkQueueAsyncTaskExecutor workQueueAsyncTaskExecutor(Environment env) {
-			return new WorkQueueAsyncTaskExecutor(env).
-					setProducerType(ProducerType.SINGLE).
-					setWaitStrategy(new YieldingWaitStrategy())
-
+			def ex = new WorkQueueAsyncTaskExecutor(env)
+			ex.producerType = ProducerType.SINGLE
+			ex.waitStrategy = new YieldingWaitStrategy()
+			return ex
 		}
 
 	}

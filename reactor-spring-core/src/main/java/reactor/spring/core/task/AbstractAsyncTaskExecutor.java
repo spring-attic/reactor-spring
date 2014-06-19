@@ -86,12 +86,9 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	 *
 	 * @param name
 	 * 		name of the threads for this work queue
-	 *
-	 * @return {@literal this}
 	 */
-	public AbstractAsyncTaskExecutor setName(String name) {
+	public void setName(String name) {
 		this.name = name;
-		return this;
 	}
 
 	/**
@@ -108,12 +105,9 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	 *
 	 * @param threads
 	 * 		the number of threads to use
-	 *
-	 * @return {@literal this}
 	 */
-	public AbstractAsyncTaskExecutor setThreads(int threads) {
+	public void setThreads(int threads) {
 		this.threads = threads;
-		return this;
 	}
 
 	/**
@@ -129,12 +123,9 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	/**
 	 * Set the number of pre-allocated tasks to keep in memory. Correlates directly to the size of the internal {@code
 	 * RingBuffer}.
-	 *
-	 * @return {@literal this}
 	 */
-	public AbstractAsyncTaskExecutor setBacklog(int backlog) {
+	public void setBacklog(int backlog) {
 		this.backlog = backlog;
-		return this;
 	}
 
 

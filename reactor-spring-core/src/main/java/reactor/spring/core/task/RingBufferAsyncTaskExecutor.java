@@ -72,28 +72,17 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	@Override
-	public RingBufferAsyncTaskExecutor setName(String name) {
-		return (RingBufferAsyncTaskExecutor)super.setName(name);
-	}
-
-	@Override
 	public int getThreads() {
 		// RingBufferDispatchers are always single-threaded
 		return 1;
 	}
 
 	@Override
-	public RingBufferAsyncTaskExecutor setThreads(int threads) {
+	public void setThreads(int threads) {
 		Assert.isTrue(threads == 1, "A RingBufferAsyncTaskExecutor is always single-threaded");
 		log.warn("RingBufferAsyncTaskExecutors are always single-threaded. Ignoring request to use " +
 				         threads +
 				         " threads.");
-		return this;
-	}
-
-	@Override
-	public RingBufferAsyncTaskExecutor setBacklog(int backlog) {
-		return (RingBufferAsyncTaskExecutor)super.setBacklog(backlog);
 	}
 
 	/**
@@ -114,9 +103,8 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	 *
 	 * @return {@literal this}
 	 */
-	public RingBufferAsyncTaskExecutor setProducerType(ProducerType producerType) {
+	public void setProducerType(ProducerType producerType) {
 		this.producerType = producerType;
-		return this;
 	}
 
 	/**
@@ -137,9 +125,8 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	 *
 	 * @return {@literal this}
 	 */
-	public RingBufferAsyncTaskExecutor setWaitStrategy(WaitStrategy waitStrategy) {
+	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;
-		return this;
 	}
 
 	@Override

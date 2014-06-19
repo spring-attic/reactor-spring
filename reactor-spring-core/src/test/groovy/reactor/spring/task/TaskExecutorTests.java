@@ -69,7 +69,7 @@ public class TaskExecutorTests {
 	private void doStop(String test) {
 		end = System.currentTimeMillis();
 		elapsed = end - start;
-		throughput = (int)(counter.get() / (elapsed / 1000));
+		throughput = (int) (counter.get() / (elapsed / 1000));
 
 		System.out.println(test + " throughput: " + throughput + "/sec");
 	}
@@ -83,7 +83,7 @@ public class TaskExecutorTests {
 		};
 
 		doStart();
-		for(int i = 0; i < runs; i++) {
+		for (int i = 0; i < runs; i++) {
 			executor.execute(r);
 		}
 		doStop(test);
@@ -99,7 +99,7 @@ public class TaskExecutorTests {
 		};
 
 		doStart();
-		for(int i = 0; i < runs; i++) {
+		for (int i = 0; i < runs; i++) {
 			executor.submit(c);
 		}
 		doStop(test);
@@ -115,17 +115,19 @@ public class TaskExecutorTests {
 
 		@Bean
 		public WorkQueueAsyncTaskExecutor workQueue(Environment env) {
-			return new WorkQueueAsyncTaskExecutor(env)
-					.setBacklog(4096)
-					.setProducerType(ProducerType.SINGLE)
-					.setWaitStrategy(new YieldingWaitStrategy());
+			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor(env);
+			ex.setBacklog(4096);
+			ex.setProducerType(ProducerType.SINGLE);
+			ex.setWaitStrategy(new YieldingWaitStrategy());
+			return ex;
 		}
 
 		@Bean
 		public RingBufferAsyncTaskExecutor ringBuffer(Environment env) {
-			return new RingBufferAsyncTaskExecutor(env)
-					.setProducerType(ProducerType.SINGLE)
-					.setWaitStrategy(new YieldingWaitStrategy());
+			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor(env);
+			ex.setProducerType(ProducerType.SINGLE);
+			ex.setWaitStrategy(new YieldingWaitStrategy());
+			return ex;
 		}
 
 	}
