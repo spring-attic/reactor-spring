@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import reactor.core.Environment;
 import reactor.core.Reactor;
-import reactor.core.composable.Deferred;
-import reactor.core.composable.Promise;
-import reactor.core.composable.spec.Promises;
 import reactor.event.Event;
+import reactor.rx.Promise;
+import reactor.rx.spec.Promises;
+
 
 /**
  * @author Jon Brisbin
@@ -25,11 +25,11 @@ public class PromiseController {
 
 	@RequestMapping("/promise")
 	public Promise<ResponseEntity<String>> get() {
-		Deferred<ResponseEntity<String>, Promise<ResponseEntity<String>>> d = Promises.<ResponseEntity<String>>defer(env);
+        Promise<ResponseEntity<String>> d = Promises.<ResponseEntity<String>>defer(env);
 
 		reactor.notify("test", Event.wrap(d));
 
-		return d.compose();
+		return d;
 	}
 
 }

@@ -6,8 +6,9 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.context.request.async.WebAsyncUtils;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import reactor.core.composable.Promise;
 import reactor.function.Consumer;
+import reactor.rx.Promise;
+
 
 /**
  * @author Jon Brisbin
