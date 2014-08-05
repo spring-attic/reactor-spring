@@ -34,7 +34,7 @@ ext {
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
 	reactorVersion = '2.0.0.BUILD-SNAPSHOT'
-	springVersion = '4.0.3.RELEASE'
+	springVersion = '4.1.0.RC1'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.3'
 	openHftLangVersion = '6.1.4'
