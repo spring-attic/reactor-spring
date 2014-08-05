@@ -4,6 +4,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.spel.SpelCompilerMode;
+import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import reactor.event.selector.ObjectSelector;
@@ -72,18 +74,36 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
 		return expressionSelector(expr, evalCtx);
 	}
 
-	/**
-	 * Helper method for creating an {@code ExpressionSelector}.
-	 *
-	 * @param expr
-	 * 		The expression to parse.
-	 * @param evalCtx
-	 * 		The {@link org.springframework.expression.EvaluationContext} to use.
-	 *
-	 * @return A new {@link reactor.event.selector.Selector}
-	 */
-	public static Selector expressionSelector(String expr, EvaluationContext evalCtx) {
-		return new ExpressionSelector(SPEL_PARSER.parseExpression(expr), evalCtx);
-	}
+    /**
+     * Helper method for creating an {@code ExpressionSelector}.
+     *
+     * @param expr
+     * 		The expression to parse.
+     * @param evalCtx
+     * 		The {@link org.springframework.expression.EvaluationContext} to use.
+     *
+     * @return A new {@link reactor.event.selector.Selector}
+     */
+    public static Selector expressionSelector(String expr, EvaluationContext evalCtx) {
+        return new ExpressionSelector(SPEL_PARSER.parseExpression(expr), evalCtx);
+    }
+
+    /**
+     * Helper method for creating an {@code ExpressionSelector}.
+     *
+     * @param expr
+     * 		The expression to parse.
+     * @param evalCtx
+     * 		The {@link org.springframework.expression.EvaluationContext} to use.
+     * @param mode
+     * 		The {@link org.springframework.expression.spel.SpelCompilerMode} to use.
+     *
+     * @return A new {@link reactor.event.selector.Selector}
+     */
+    public static Selector expressionSelector(String expr, EvaluationContext evalCtx, SpelCompilerMode mode) {
+        SpelParserConfiguration configuration = new SpelParserConfiguration(mode, null);
+        SpelExpressionParser parser = new SpelExpressionParser(configuration);
+        return new ExpressionSelector(parser.parseExpression(expr), evalCtx);
+    }
 
 }
