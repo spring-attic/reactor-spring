@@ -1,7 +1,7 @@
 package reactor.spring.task;
 
-import com.lmax.disruptor.YieldingWaitStrategy;
-import com.lmax.disruptor.dsl.ProducerType;
+import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy;
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

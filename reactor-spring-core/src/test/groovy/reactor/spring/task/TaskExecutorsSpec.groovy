@@ -16,8 +16,8 @@
 
 package reactor.spring.task
 
-import com.lmax.disruptor.YieldingWaitStrategy
-import com.lmax.disruptor.dsl.ProducerType
+import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
