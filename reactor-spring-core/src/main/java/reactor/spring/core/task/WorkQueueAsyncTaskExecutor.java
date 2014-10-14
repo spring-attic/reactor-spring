@@ -1,8 +1,5 @@
 package reactor.spring.core.task;
 
-import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
-import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
-import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -11,6 +8,9 @@ import reactor.core.Environment;
 import reactor.event.dispatch.AbstractLifecycleDispatcher;
 import reactor.event.dispatch.WorkQueueDispatcher;
 import reactor.function.Consumer;
+import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
+import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import reactor.timer.Timer;
 
 /**
@@ -30,7 +30,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private WorkQueueDispatcher       workQueue;
 
 	public WorkQueueAsyncTaskExecutor(Environment env) {
-		this(env.getRootTimer());
+		this(env.getTimer());
 	}
 
 	public WorkQueueAsyncTaskExecutor(Timer timer) {
@@ -64,44 +64,40 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	/**
-	 * Get the {@link com.lmax.disruptor.dsl.ProducerType} this {@link com.lmax.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType} this {@link reactor.jarjar.com.lmax.disruptor.RingBuffer} is using.
 	 *
-	 * @return the {@link com.lmax.disruptor.dsl.ProducerType}
+	 * @return the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType}
 	 */
 	public ProducerType getProducerType() {
 		return producerType;
 	}
 
 	/**
-	 * Set the {@link com.lmax.disruptor.dsl.ProducerType} to use when creating the internal {@link
-	 * com.lmax.disruptor.RingBuffer}.
+	 * Set the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType} to use when creating the internal {@link
+	 * reactor.jarjar.com.lmax.disruptor.RingBuffer}.
 	 *
 	 * @param producerType
-	 * 		the {@link com.lmax.disruptor.dsl.ProducerType}
-	 *
-	 * @return {@literal this}
+	 * 		the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType}
 	 */
 	public void setProducerType(ProducerType producerType) {
 		this.producerType = producerType;
 	}
 
 	/**
-	 * Get the {@link com.lmax.disruptor.WaitStrategy} this {@link com.lmax.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy} this {@link reactor.jarjar.com.lmax.disruptor.RingBuffer} is using.
 	 *
-	 * @return the {@link com.lmax.disruptor.WaitStrategy}
+	 * @return the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link com.lmax.disruptor.WaitStrategy} to use when creating the internal {@link
-	 * com.lmax.disruptor.RingBuffer}.
+	 * Set the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy} to use when creating the internal {@link
+	 * reactor.jarjar.com.lmax.disruptor.RingBuffer}.
 	 *
 	 * @param waitStrategy
-	 * 		the {@link com.lmax.disruptor.WaitStrategy}
-	 *
-	 * @return {@literal this}
+	 * 		the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;

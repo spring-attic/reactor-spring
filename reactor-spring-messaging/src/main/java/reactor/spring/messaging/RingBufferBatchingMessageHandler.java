@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A {@link org.springframework.messaging.MessageHandler} implementation that buffers message payloads until
- * an internal {@link com.lmax.disruptor.RingBuffer} is filled. When the buffer is full, a new aggregate
+ * an internal {@link reactor.jarjar.com.lmax.disruptor.RingBuffer} is filled. When the buffer is full, a new aggregate
  * {@link org.springframework.messaging.Message} is created and sent into the delegate
  * {@link org.springframework.messaging.MessageHandler}.
  *
@@ -59,8 +59,8 @@ public class RingBufferBatchingMessageHandler implements MessageHandler, Initial
 	}
 
 	/**
-	 * Create a batching handler using the given delegate, {@code batchSize}, {@link com.lmax.disruptor.dsl
-	 * .ProducerType}, and {@link com.lmax.disruptor.WaitStrategy}.
+	 * Create a batching handler using the given delegate, {@code batchSize}, {@link reactor.jarjar.com.lmax.disruptor.dsl
+	 * .ProducerType}, and {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}.
 	 *
 	 * @param delegate
 	 * 		the delegate {@link org.springframework.messaging.MessageHandler} to invoke

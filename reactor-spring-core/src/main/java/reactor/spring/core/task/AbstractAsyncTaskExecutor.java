@@ -123,6 +123,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	/**
 	 * Set the number of pre-allocated tasks to keep in memory. Correlates directly to the size of the internal {@code
 	 * RingBuffer}.
+	 * @param backlog the backlog value
 	 */
 	public void setBacklog(int backlog) {
 		this.backlog = backlog;

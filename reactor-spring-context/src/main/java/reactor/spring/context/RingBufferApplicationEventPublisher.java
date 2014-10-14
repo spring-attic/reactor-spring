@@ -1,12 +1,12 @@
 package reactor.spring.context;
 
-import reactor.jarjar.com.lmax.disruptor.*;
-import reactor.jarjar.com.lmax.disruptor.dsl.Disruptor;
-import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.*;
+import reactor.jarjar.com.lmax.disruptor.*;
+import reactor.jarjar.com.lmax.disruptor.dsl.Disruptor;
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import reactor.support.NamedDaemonThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of {@link org.springframework.context.ApplicationEventPublisher} that uses a {@link
- * com.lmax.disruptor.RingBuffer} to dispatch events.
+ * reactor.jarjar.com.lmax.disruptor.RingBuffer} to dispatch events.
  *
  * @author Jon Brisbin
  */
