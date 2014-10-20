@@ -33,7 +33,7 @@ ext {
 	jsonPathVersion = '0.9.0'
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
-	reactorVersion = '2.0.0.BUILD-SNAPSHOT'
+	reactorVersion = '2.0.0.M1'
 	springVersion = '4.1.1.RELEASE'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.3'
@@ -97,7 +97,7 @@ subprojects { subproject ->
 		apply plugin: 'spring-io'
 
 		repositories {
-			maven { url 'http://repo.spring.io/libs-snapshot' }
+			maven { url 'http://repo.spring.io/libs-milestone' }
 		}
 
 		dependencies {
