@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import reactor.core.Environment
 import reactor.core.Reactor
-import reactor.core.spec.Reactors
 import reactor.event.Event
+import reactor.event.EventBus
 import reactor.spring.context.annotation.ReplyTo
 import reactor.spring.context.annotation.Selector
 import spock.lang.Specification
@@ -107,7 +107,7 @@ public class ReactorConfig {
 
 	@Bean
 	Reactor reactor(Environment env) {
-		Reactors.reactor(env, "sync")
+		EventBus.create(env, "sync")
 	}
 
 	@Bean

@@ -17,7 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.core.Environment;
 import reactor.core.Reactor;
-import reactor.core.spec.Reactors;
+import reactor.event.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
 import java.util.concurrent.CountDownLatch;
@@ -93,7 +93,7 @@ public class ReactorSubscribableChannelThroughputTests {
 
 		@Bean
 		public Reactor reactor(Environment env) {
-			return Reactors.reactor(env, Environment.RING_BUFFER);
+			return EventBus.create(env, Environment.RING_BUFFER);
 		}
 
 	}

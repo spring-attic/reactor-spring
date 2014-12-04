@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 import reactor.core.Environment;
 import reactor.core.Reactor;
 import reactor.core.spec.ReactorSpec;
-import reactor.core.spec.Reactors;
+import reactor.event.EventBus;
 
 /**
  * A Spring {@link FactoryBean} for creating a singleton {@link Reactor}.
@@ -77,7 +77,7 @@ public class ReactorFactoryBean implements FactoryBean<Reactor> {
 	                          EventRouting eventRouting) {
 		Assert.notNull(env, "Environment cannot be null.");
 
-		ReactorSpec spec = Reactors.reactor().env(env);
+		ReactorSpec spec = EventBus.create().env(env);
 		if(null != dispatcher) {
 			if("sync".equals(dispatcher)) {
 				spec.synchronousDispatcher();

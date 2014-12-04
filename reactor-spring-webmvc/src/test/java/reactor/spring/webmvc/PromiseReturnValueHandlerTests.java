@@ -21,7 +21,7 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import reactor.core.Environment;
 import reactor.core.Reactor;
-import reactor.core.spec.Reactors;
+import reactor.event.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
 import java.util.List;
@@ -29,7 +29,6 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author Jon Brisbin
@@ -69,7 +68,7 @@ public class PromiseReturnValueHandlerTests {
 
 		@Bean
 		public Reactor reactor(Environment env) {
-			return Reactors.reactor(env);
+			return EventBus.create(env);
 		}
 
 		@Override

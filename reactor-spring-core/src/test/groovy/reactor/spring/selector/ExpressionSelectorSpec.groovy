@@ -1,12 +1,13 @@
 package reactor.spring.selector
 
 import reactor.core.Environment
-import reactor.core.spec.Reactors
 import reactor.event.Event
+import reactor.event.EventBus
 import reactor.function.Consumer
 import spock.lang.Specification
 
 import static ExpressionSelector.E
+
 /**
  * @author Jon Brisbin
  */
@@ -22,7 +23,7 @@ class ExpressionSelectorSpec extends Specification {
 
 		given:
 			"a plain Reactor"
-			def r = Reactors.reactor().get()
+			def r = EventBus.create().get()
 			def names = []
 
 		when:
