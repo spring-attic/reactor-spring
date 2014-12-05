@@ -7,7 +7,7 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
-import reactor.event.dispatch.AbstractLifecycleDispatcher;
+import reactor.core.dispatch.AbstractLifecycleDispatcher;
 import reactor.event.registry.Registration;
 import reactor.function.Consumer;
 import reactor.timer.Timer;
