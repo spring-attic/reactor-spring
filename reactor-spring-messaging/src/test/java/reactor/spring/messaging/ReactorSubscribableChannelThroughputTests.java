@@ -16,7 +16,6 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.core.Environment;
-import reactor.core.Reactor;
 import reactor.event.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
@@ -40,7 +39,7 @@ public class ReactorSubscribableChannelThroughputTests {
 	static final int    MSGS = 5000;
 
 	@Autowired
-	Reactor reactor;
+	EventBus eventBus;
 
 	CountDownLatch latch;
 	long           start;
@@ -92,7 +91,7 @@ public class ReactorSubscribableChannelThroughputTests {
 	static class ReactorConfig {
 
 		@Bean
-		public Reactor reactor(Environment env) {
+		public EventBus eventBus(Environment env) {
 			return EventBus.create(env, Environment.RING_BUFFER);
 		}
 

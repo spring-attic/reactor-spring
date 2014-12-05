@@ -31,20 +31,20 @@ public @interface Selector {
 	/**
 	 * An expression that evaluates to a {@link reactor.event.selector.Selector} to register
      * this handler with the {@link
-	 * reactor.core.Reactor}.
+	 * reactor.event.EventBus}.
 	 * If empty, consumer will be subscribed on the global reactor selector
-	 * {@link reactor.core.Reactor#on(reactor.event.selector.Selector selector, reactor.function.Consumer)}
+	 * {@link reactor.event.EventBus#on(reactor.event.selector.Selector selector, reactor.function.Consumer)}
 	 *
 	 * @return An expression to be evaluated.
 	 */
 	String value() default "";
 
 	/**
-	 * An expression that evaluates to the {@link reactor.core.Reactor} on which to place this handler.
+	 * An expression that evaluates to the {@link reactor.event.EventBus} on which to place this handler.
 	 *
 	 * @return An expression to be evaluated.
 	 */
-	String reactor() default "reactor";
+	String eventBus() default "eventBus";
 
 	/**
 	 * The type of {@link reactor.event.selector.Selector} to register.

@@ -20,8 +20,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import reactor.core.Environment
-import reactor.core.Reactor
 import reactor.event.Event
+import reactor.event.EventBus
 import reactor.spring.context.annotation.Consumer
 import reactor.spring.context.annotation.Selector
 import reactor.spring.context.annotation.SelectorType
@@ -42,7 +42,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 		"an ApplicationContext with an annotated bean handler"
 		def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
 		def handlerBean = appCtx.getBean(HandlerBean)
-		def reactor = appCtx.getBean(Reactor)
+		def reactor = appCtx.getBean(EventBus)
 
 		when:
 		"an Event is emitted onto the Reactor in context"
@@ -59,7 +59,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 @Consumer
 class HandlerBean {
 	@Autowired
-	Reactor reactor
+	EventBus eventBus
 	def latch = new CountDownLatch(1)
 
 	@Selector(value = '/{a}/{b}', type = SelectorType.URI)
@@ -78,8 +78,8 @@ class AnnotatedHandlerConfig {
 	}
 
 	@Bean
-	Reactor rootReactor(Environment env) {
-		return env.rootReactor
+	EventBus eventBus(Environment env) {
+		return env.rootBus
 	}
 
 	@Bean

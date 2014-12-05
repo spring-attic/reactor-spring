@@ -21,8 +21,8 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
-import reactor.core.Observable;
 import reactor.event.Event;
+import reactor.event.Observable;
 import reactor.event.selector.Selectors;
 import reactor.function.Consumer;
 import reactor.function.Function;
@@ -186,7 +186,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 	}
 
 	private Observable fetchObservable(Selector selectorAnno, Object bean) {
-		return expression(selectorAnno.reactor(), bean);
+		return expression(selectorAnno.eventBus(), bean);
 	}
 
 	private Object parseSelector(Selector selector, Object bean, Method method) {

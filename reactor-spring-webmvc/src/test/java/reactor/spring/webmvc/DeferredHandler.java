@@ -12,7 +12,7 @@ import reactor.spring.context.annotation.Selector;
 @Consumer
 public class DeferredHandler {
 
-	@Selector(value = "test", reactor = "@reactor")
+	@Selector(value = "test", eventBus = "@eventBus")
 	public void test(Promise<ResponseEntity<String>> d) {
 		d.accept(new ResponseEntity<String>("Hello World!", HttpStatus.OK));
 	}

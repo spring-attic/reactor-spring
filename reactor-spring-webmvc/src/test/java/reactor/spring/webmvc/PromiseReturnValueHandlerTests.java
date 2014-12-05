@@ -20,7 +20,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import reactor.core.Environment;
-import reactor.core.Reactor;
 import reactor.event.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
@@ -67,7 +66,7 @@ public class PromiseReturnValueHandlerTests {
 	static class ContextConfig extends WebMvcConfigurationSupport {
 
 		@Bean
-		public Reactor reactor(Environment env) {
+		public EventBus eventBus(Environment env) {
 			return EventBus.create(env);
 		}
 

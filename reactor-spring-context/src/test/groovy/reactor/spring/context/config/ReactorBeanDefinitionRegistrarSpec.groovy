@@ -7,7 +7,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import reactor.core.Environment
-import reactor.core.Reactor
 import reactor.event.Event
 import reactor.event.EventBus
 import reactor.spring.context.annotation.ReplyTo
@@ -16,6 +15,7 @@ import spock.lang.Specification
 
 /**
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
 class ReactorBeanDefinitionRegistrarSpec extends Specification {
 
@@ -25,7 +25,7 @@ class ReactorBeanDefinitionRegistrarSpec extends Specification {
 			"an annotated configuration"
 			def appCtx = new AnnotationConfigApplicationContext(ReactorConfig)
 			def consumer = appCtx.getBean(LoggingConsumer)
-			def reactor = appCtx.getBean(Reactor)
+			def reactor = appCtx.getBean(EventBus)
 
 		when:
 			"notifying the injected Reactor"
@@ -51,7 +51,7 @@ class ReactorBeanDefinitionRegistrarSpec extends Specification {
 			'an annotated configuration'
 			def appCtx = new AnnotationConfigApplicationContext(ReactorConfig)
 			def consumer = appCtx.getBean(LoggingConsumer)
-			def reactor = appCtx.getBean(Reactor)
+			def reactor = appCtx.getBean(EventBus)
 
 		when:
 			"notifying the injected Reactor"
@@ -68,7 +68,7 @@ class ReactorBeanDefinitionRegistrarSpec extends Specification {
 @reactor.spring.context.annotation.Consumer
 class LoggingConsumer {
 	@Autowired
-	Reactor reactor
+	EventBus eventBus
 	long count = 0
 	Logger log = LoggerFactory.getLogger(LoggingConsumer)
 
@@ -106,12 +106,11 @@ class LoggingConsumer {
 public class ReactorConfig {
 
 	@Bean
-	Reactor reactor(Environment env) {
+	EventBus eventBus(Environment env) {
 		EventBus.create(env, "sync")
 	}
 
 	@Bean
-
 	LoggingConsumer loggingConsumer() {
 		new LoggingConsumer()
 	}

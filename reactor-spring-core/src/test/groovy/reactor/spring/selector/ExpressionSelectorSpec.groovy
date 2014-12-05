@@ -23,7 +23,7 @@ class ExpressionSelectorSpec extends Specification {
 
 		given:
 			"a plain Reactor"
-			def r = EventBus.create().get()
+			def r = EventBus.config().get()
 			def names = []
 
 		when:
