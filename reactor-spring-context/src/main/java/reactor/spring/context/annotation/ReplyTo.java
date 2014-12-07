@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * @author Jon Brisbin
  * @author Stephane Maldini
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ReplyTo {

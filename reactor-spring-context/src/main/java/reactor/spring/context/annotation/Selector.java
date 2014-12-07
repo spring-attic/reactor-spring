@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  * @author Jon Brisbin
  * @author Stephane Maldini
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Selector {
