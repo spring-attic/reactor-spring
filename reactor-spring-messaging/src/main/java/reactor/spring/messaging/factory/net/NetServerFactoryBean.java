@@ -56,7 +56,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	public NetServerFactoryBean(Environment env) {this.env = env;}
 
 	/**
-	 * Set the name of the {@link reactor.core.dispatch.Dispatcher} to use, which will be pulled from the current {@link
+	 * Set the name of the {@link reactor.core.Dispatcher} to use, which will be pulled from the current {@link
 	 * reactor.Environment}.
 	 *
 	 * @param dispatcher
@@ -124,7 +124,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	}
 
 	/**
-	 * Set the {@link reactor.io.encoding.Codec} to use to managing encoding and decoding of the data.
+	 * Set the {@link reactor.io.codec.Codec} to use to managing encoding and decoding of the data.
 	 * <p>
 	 * The options for codecs currently are:
 	 * <ul>

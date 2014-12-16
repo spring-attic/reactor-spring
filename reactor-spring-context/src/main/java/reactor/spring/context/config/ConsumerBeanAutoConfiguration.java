@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static reactor.bus.selector.Selectors.*;
-import static reactor.io.selector.JsonPathSelector.jsonPathSelector;
+import static reactor.io.routing.JsonPathSelector.jsonPathSelector;
 
 /**
  * {@link org.springframework.context.ApplicationListener} implementation that finds beans registered in the current
