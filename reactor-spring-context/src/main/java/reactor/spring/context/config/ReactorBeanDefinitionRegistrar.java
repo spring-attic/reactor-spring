@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
 import reactor.Environment;
-import reactor.core.configuration.PropertiesConfigurationReader;
+import reactor.core.config.PropertiesConfigurationReader;
 import reactor.fn.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 

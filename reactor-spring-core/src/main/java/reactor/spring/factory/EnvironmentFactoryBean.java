@@ -2,8 +2,8 @@ package reactor.spring.factory;
 
 import org.springframework.beans.factory.FactoryBean;
 import reactor.Environment;
-import reactor.core.configuration.ConfigurationReader;
-import reactor.core.configuration.PropertiesConfigurationReader;
+import reactor.core.config.ConfigurationReader;
+import reactor.core.config.PropertiesConfigurationReader;
 
 /**
  * A {@link FactoryBean} implementation that provides easy creation of Reactor a {@link Environment}.
