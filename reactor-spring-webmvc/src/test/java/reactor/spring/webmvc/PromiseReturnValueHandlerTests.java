@@ -20,7 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import reactor.Environment;
-import reactor.event.EventBus;
+import reactor.bus.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
 import java.util.List;

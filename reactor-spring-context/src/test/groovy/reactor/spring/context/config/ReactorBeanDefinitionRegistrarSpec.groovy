@@ -7,8 +7,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import reactor.Environment
-import reactor.event.Event
-import reactor.event.EventBus
+import reactor.bus.Event
+import reactor.bus.EventBus
 import reactor.spring.context.annotation.ReplyTo
 import reactor.spring.context.annotation.Selector
 import spock.lang.Specification

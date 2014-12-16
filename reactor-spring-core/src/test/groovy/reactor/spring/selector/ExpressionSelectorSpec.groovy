@@ -1,8 +1,8 @@
 package reactor.spring.selector
 
 import reactor.Environment
-import reactor.event.Event
-import reactor.event.EventBus
+import reactor.bus.Event
+import reactor.bus.EventBus
 import reactor.fn.Consumer
 import spock.lang.Specification
 

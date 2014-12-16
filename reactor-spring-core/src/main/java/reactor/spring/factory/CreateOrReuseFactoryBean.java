@@ -9,7 +9,7 @@ import reactor.fn.Supplier;
  * Spring {@link org.springframework.beans.factory.FactoryBean} implementation to provide either a new bean, created on
  * the first injection, or the previously-created bean thereafter.
  * <p>This is slightly different than letting the Spring container handle this behaviour as the instance will come from
- * the given {@link reactor.function.Supplier} the first time around.</p>
+ * the given {@link reactor.fn.Supplier} the first time around.</p>
  *
  * @author Jon Brisbin
  */

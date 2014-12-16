@@ -29,27 +29,27 @@ import java.lang.annotation.*;
 public @interface Selector {
 
 	/**
-	 * An expression that evaluates to a {@link reactor.event.selector.Selector} to register
+	 * An expression that evaluates to a {@link reactor.bus.selector.Selector} to register
      * this handler with the {@link
-	 * reactor.event.EventBus}.
+	 * reactor.bus.EventBus}.
 	 * If empty, consumer will be subscribed on the global reactor selector
-	 * {@link reactor.event.EventBus#on(reactor.event.selector.Selector selector, reactor.function.Consumer)}
+	 * {@link reactor.bus.EventBus#on(reactor.bus.selector.Selector selector, reactor.fn.Consumer)}
 	 *
 	 * @return An expression to be evaluated.
 	 */
 	String value() default "";
 
 	/**
-	 * An expression that evaluates to the {@link reactor.event.EventBus} on which to place this handler.
+	 * An expression that evaluates to the {@link reactor.bus.EventBus} on which to place this handler.
 	 *
 	 * @return An expression to be evaluated.
 	 */
 	String eventBus() default "eventBus";
 
 	/**
-	 * The type of {@link reactor.event.selector.Selector} to register.
+	 * The type of {@link reactor.bus.selector.Selector} to register.
 	 *
-	 * @return The type of the {@link reactor.event.selector.Selector}.
+	 * @return The type of the {@link reactor.bus.selector.Selector}.
 	 */
 	SelectorType type() default SelectorType.OBJECT;
 

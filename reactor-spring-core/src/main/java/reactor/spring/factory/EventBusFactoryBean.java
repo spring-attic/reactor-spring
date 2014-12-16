@@ -19,8 +19,8 @@ package reactor.spring.factory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
 import reactor.Environment;
-import reactor.event.EventBus;
-import reactor.event.spec.EventBusSpec;
+import reactor.bus.EventBus;
+import reactor.bus.spec.EventBusSpec;
 
 /**
  * A Spring {@link FactoryBean} for creating a singleton {@link EventBus}.

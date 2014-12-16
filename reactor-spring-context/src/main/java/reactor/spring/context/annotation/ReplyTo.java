@@ -30,7 +30,7 @@ public @interface ReplyTo {
 
 	/**
 	 * An expression which evaluates to a key to which is sent the method return value.
-	 * If empty, consumer will try to use {@link reactor.event.Event#getReplyTo()} header.
+	 * If empty, consumer will try to use {@link reactor.bus.Event#getReplyTo()} header.
 	 *
 	 * @return The expression.
 	 */

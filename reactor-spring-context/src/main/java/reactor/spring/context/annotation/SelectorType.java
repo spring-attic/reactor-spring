@@ -1,7 +1,7 @@
 package reactor.spring.context.annotation;
 
 /**
- * Enum for indicating the type of {@link reactor.event.selector.Selector} that should be created.
+ * Enum for indicating the type of {@link reactor.bus.selector.Selector} that should be created.
  *
  * @author Jon Brisbin
  */

@@ -10,10 +10,10 @@ import reactor.core.dispatch.AbstractLifecycleDispatcher;
 import reactor.core.dispatch.RingBufferDispatcher;
 import reactor.core.support.Assert;
 import reactor.fn.Consumer;
+import reactor.fn.timer.Timer;
 import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
-import reactor.timer.Timer;
 
 /**
  * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferDispatcher}

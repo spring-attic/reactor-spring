@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.*;
+import reactor.core.support.NamedDaemonThreadFactory;
 import reactor.jarjar.com.lmax.disruptor.*;
 import reactor.jarjar.com.lmax.disruptor.dsl.Disruptor;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
-import reactor.support.NamedDaemonThreadFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;

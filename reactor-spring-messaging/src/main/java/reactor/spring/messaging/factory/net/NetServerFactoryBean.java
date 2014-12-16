@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.net.NetServer}.
+ * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.io.net.NetServer}.
  *
  * @author Jon Brisbin
  */
@@ -56,8 +56,8 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	public NetServerFactoryBean(Environment env) {this.env = env;}
 
 	/**
-	 * Set the name of the {@link reactor.event.dispatch.Dispatcher} to use, which will be pulled from the current {@link
-	 * reactor.core.Environment}.
+	 * Set the name of the {@link reactor.core.dispatch.Dispatcher} to use, which will be pulled from the current {@link
+	 * reactor.Environment}.
 	 *
 	 * @param dispatcher
 	 * 		dispatcher name

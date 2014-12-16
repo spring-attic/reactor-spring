@@ -8,14 +8,14 @@ import reactor.Environment;
 import reactor.core.dispatch.AbstractLifecycleDispatcher;
 import reactor.core.dispatch.WorkQueueDispatcher;
 import reactor.fn.Consumer;
+import reactor.fn.timer.Timer;
 import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
-import reactor.timer.Timer;
 
 /**
  * Implementation of an {@link org.springframework.core.task.AsyncTaskExecutor} that is backed by a Reactor {@link
- * reactor.event.dispatch.WorkQueueDispatcher}.
+ * reactor.core.dispatch.WorkQueueDispatcher}.
  *
  * @author Jon Brisbin
  * @since 1.1

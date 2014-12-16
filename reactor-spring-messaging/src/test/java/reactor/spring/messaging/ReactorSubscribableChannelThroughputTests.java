@@ -16,7 +16,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.Environment;
-import reactor.event.EventBus;
+import reactor.bus.EventBus;
 import reactor.spring.context.config.EnableReactor;
 
 import java.util.concurrent.CountDownLatch;

@@ -8,11 +8,11 @@ import org.springframework.expression.spel.SpelCompilerMode;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import reactor.event.selector.ObjectSelector;
-import reactor.event.selector.Selector;
+import reactor.bus.selector.ObjectSelector;
+import reactor.bus.selector.Selector;
 
 /**
- * An implementation of {@link reactor.event.selector.Selector} that uses a SpEL expression to evaluate the match.
+ * An implementation of {@link reactor.bus.selector.Selector} that uses a SpEL expression to evaluate the match.
  *
  * @author Jon Brisbin
  */
@@ -38,7 +38,7 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
 	 * @param expr
 	 * 		The expression to parse.
 	 *
-	 * @return A new {@link reactor.event.selector.Selector}
+	 * @return A new {@link reactor.bus.selector.Selector}
 	 */
 	public static Selector E(String expr) {
 		return expressionSelector(expr, (BeanFactory)null);
@@ -50,7 +50,7 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
 	 * @param expr
 	 * 		The expression to parse.
 	 *
-	 * @return A new {@link reactor.event.selector.Selector}
+	 * @return A new {@link reactor.bus.selector.Selector}
 	 */
 	public static Selector expressionSelector(String expr) {
 		return expressionSelector(expr, (BeanFactory)null);
@@ -64,7 +64,7 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
 	 * @param beanFactory
 	 * 		The {@link org.springframework.beans.factory.BeanFactory} to use to resolve references in the expression.
 	 *
-	 * @return A new {@link reactor.event.selector.Selector}
+	 * @return A new {@link reactor.bus.selector.Selector}
 	 */
 	public static Selector expressionSelector(String expr, BeanFactory beanFactory) {
 		StandardEvaluationContext evalCtx = new StandardEvaluationContext();
@@ -82,7 +82,7 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
      * @param evalCtx
      * 		The {@link org.springframework.expression.EvaluationContext} to use.
      *
-     * @return A new {@link reactor.event.selector.Selector}
+     * @return A new {@link reactor.bus.selector.Selector}
      */
     public static Selector expressionSelector(String expr, EvaluationContext evalCtx) {
         return new ExpressionSelector(SPEL_PARSER.parseExpression(expr), evalCtx);
@@ -98,7 +98,7 @@ public class ExpressionSelector extends ObjectSelector<Expression> {
      * @param mode
      * 		The {@link org.springframework.expression.spel.SpelCompilerMode} to use.
      *
-     * @return A new {@link reactor.event.selector.Selector}
+     * @return A new {@link reactor.bus.selector.Selector}
      */
     public static Selector expressionSelector(String expr, EvaluationContext evalCtx, SpelCompilerMode mode) {
         SpelParserConfiguration configuration = new SpelParserConfiguration(mode, null);

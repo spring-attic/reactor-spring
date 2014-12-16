@@ -21,10 +21,10 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import reactor.bus.Event;
+import reactor.bus.Observable;
+import reactor.bus.selector.Selectors;
 import reactor.core.support.StringUtils;
-import reactor.event.Event;
-import reactor.event.Observable;
-import reactor.event.selector.Selectors;
 import reactor.fn.Consumer;
 import reactor.fn.Function;
 import reactor.spring.context.annotation.ReplyTo;
@@ -36,7 +36,7 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static reactor.event.selector.Selectors.*;
+import static reactor.bus.selector.Selectors.*;
 import static reactor.io.selector.JsonPathSelector.jsonPathSelector;
 
 /**
@@ -62,7 +62,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConsumerBeanAutoConfiguration.class);
 
-	private reactor.event.selector.Selector defaultSelector = Selectors.anonymous();
+	private reactor.bus.selector.Selector defaultSelector = Selectors.anonymous();
 	private Map<String, Boolean>            wiredBeans      = new HashMap<String, Boolean>();
 
 	private ApplicationContext            appCtx;
@@ -144,7 +144,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		Observable reactor;
 		Selector selectorAnno;
 		ReplyTo replyToAnno;
-		reactor.event.selector.Selector selector;
+		reactor.bus.selector.Selector selector;
 
 		for (final Method method : methods) {
 			//scanAnnotation method
@@ -212,7 +212,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 	}
 
-	private reactor.event.selector.Selector fetchSelector(Selector selectorAnno, Object bean, Method method) {
+	private reactor.bus.selector.Selector fetchSelector(Selector selectorAnno, Object bean, Method method) {
 		Object sel = parseSelector(selectorAnno, bean, method);
 		try {
 			switch (selectorAnno.type()) {
