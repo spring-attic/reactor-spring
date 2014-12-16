@@ -21,14 +21,14 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import reactor.core.support.StringUtils;
 import reactor.event.Event;
 import reactor.event.Observable;
 import reactor.event.selector.Selectors;
-import reactor.function.Consumer;
-import reactor.function.Function;
+import reactor.fn.Consumer;
+import reactor.fn.Function;
 import reactor.spring.context.annotation.ReplyTo;
 import reactor.spring.context.annotation.Selector;
-import reactor.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

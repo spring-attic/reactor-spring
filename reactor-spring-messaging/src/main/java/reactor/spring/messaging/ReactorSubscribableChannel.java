@@ -9,9 +9,9 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.processor.Operation;
 import reactor.core.processor.Processor;
 import reactor.core.processor.spec.ProcessorSpec;
-import reactor.function.Consumer;
-import reactor.function.Supplier;
-import reactor.function.support.DelegatingConsumer;
+import reactor.fn.Consumer;
+import reactor.fn.Supplier;
+import reactor.fn.support.DelegatingConsumer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

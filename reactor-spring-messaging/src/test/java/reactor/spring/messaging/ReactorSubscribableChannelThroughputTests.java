@@ -15,7 +15,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.core.Environment;
+import reactor.Environment;
 import reactor.event.EventBus;
 import reactor.spring.context.config.EnableReactor;
 

@@ -1,7 +1,7 @@
 package reactor.spring.factory;
 
 import org.springframework.beans.factory.FactoryBean;
-import reactor.core.Environment;
+import reactor.Environment;
 import reactor.core.configuration.ConfigurationReader;
 import reactor.core.configuration.PropertiesConfigurationReader;
 

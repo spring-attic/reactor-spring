@@ -1,9 +1,9 @@
 package reactor.spring.factory;
 
 import org.springframework.beans.factory.FactoryBean;
+import reactor.fn.Supplier;
+import reactor.fn.Suppliers;
 import reactor.timer.SimpleHashWheelTimer;
-import reactor.function.Supplier;
-import reactor.function.Suppliers;
 import reactor.timer.Timer;
 
 /**

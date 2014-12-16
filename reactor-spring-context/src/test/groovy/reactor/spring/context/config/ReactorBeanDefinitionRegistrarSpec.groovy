@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import reactor.core.Environment
+import reactor.Environment
 import reactor.event.Event
 import reactor.event.EventBus
 import reactor.spring.context.annotation.ReplyTo

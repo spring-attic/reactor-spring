@@ -5,15 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import reactor.core.Environment;
+import reactor.Environment;
 import reactor.core.dispatch.AbstractLifecycleDispatcher;
 import reactor.core.dispatch.RingBufferDispatcher;
-import reactor.function.Consumer;
+import reactor.core.support.Assert;
+import reactor.fn.Consumer;
 import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import reactor.timer.Timer;
-import reactor.util.Assert;
 
 /**
  * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferDispatcher}

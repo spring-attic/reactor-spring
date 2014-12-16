@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2013 GoPivotal, Inc. All Rights Reserved.
+ * Copyright (c) 2011-2015 Pivotal Software Inc., Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package reactor.spring.task
 
-import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy
-import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import reactor.core.Environment
+import reactor.Environment
+import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
 import spock.lang.Ignore
 import spock.lang.Specification

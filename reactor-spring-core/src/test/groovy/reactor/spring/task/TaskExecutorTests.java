@@ -1,7 +1,5 @@
 package reactor.spring.task;
 
-import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy;
-import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.core.Environment;
+import reactor.Environment;
+import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy;
+import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
 

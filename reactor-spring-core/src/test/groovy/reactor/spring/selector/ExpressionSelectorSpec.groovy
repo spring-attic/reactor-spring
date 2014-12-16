@@ -1,9 +1,9 @@
 package reactor.spring.selector
 
-import reactor.core.Environment
+import reactor.Environment
 import reactor.event.Event
 import reactor.event.EventBus
-import reactor.function.Consumer
+import reactor.fn.Consumer
 import spock.lang.Specification
 
 import static ExpressionSelector.E

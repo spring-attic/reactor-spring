@@ -2,8 +2,8 @@ package reactor.spring.factory;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
-import reactor.function.Supplier;
-import reactor.util.Assert;
+import reactor.core.support.Assert;
+import reactor.fn.Supplier;
 
 /**
  * Spring {@link org.springframework.beans.factory.FactoryBean} implementation to provide either a new bean, created on

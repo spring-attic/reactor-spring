@@ -5,9 +5,9 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
-import reactor.core.Environment;
+import reactor.Environment;
 import reactor.core.configuration.PropertiesConfigurationReader;
-import reactor.function.Supplier;
+import reactor.fn.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
 import java.util.Map;
