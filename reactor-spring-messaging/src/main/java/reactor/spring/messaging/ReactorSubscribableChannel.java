@@ -6,9 +6,9 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.util.ObjectUtils;
-import reactor.core.processor.Operation;
-import reactor.core.processor.Processor;
-import reactor.core.processor.spec.ProcessorSpec;
+import reactor.core.dispatch.processor.Operation;
+import reactor.core.dispatch.processor.Processor;
+import reactor.core.dispatch.processor.spec.ProcessorSpec;
 import reactor.fn.Consumer;
 import reactor.fn.Supplier;
 import reactor.fn.support.DelegatingConsumer;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
- * Reactor {@link reactor.core.processor.Processor} to publish messages for efficiency at high volumes.
+ * Reactor {@link reactor.core.dispatch.processor.Processor} to publish messages for efficiency at high volumes.
  *
  * @author Jon Brisbin
  */

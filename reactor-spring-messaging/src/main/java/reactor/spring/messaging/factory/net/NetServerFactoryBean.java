@@ -14,7 +14,7 @@ import reactor.io.codec.LengthFieldCodec;
 import reactor.io.codec.StandardCodecs;
 import reactor.io.net.NetChannel;
 import reactor.io.net.NetServer;
-import reactor.io.net.encoding.syslog.SyslogCodec;
+import reactor.io.net.codec.syslog.SyslogCodec;
 import reactor.io.net.netty.tcp.NettyTcpServer;
 import reactor.io.net.netty.udp.NettyDatagramServer;
 import reactor.io.net.spec.NetServerSpec;
