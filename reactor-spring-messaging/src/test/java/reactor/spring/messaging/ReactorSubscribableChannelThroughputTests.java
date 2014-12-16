@@ -92,7 +92,7 @@ public class ReactorSubscribableChannelThroughputTests {
 
 		@Bean
 		public EventBus eventBus(Environment env) {
-			return EventBus.create(env, Environment.RING_BUFFER);
+			return EventBus.create(env, Environment.SHARED);
 		}
 
 	}
