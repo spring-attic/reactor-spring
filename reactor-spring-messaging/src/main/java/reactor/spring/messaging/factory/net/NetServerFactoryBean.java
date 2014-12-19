@@ -12,22 +12,22 @@ import reactor.io.codec.Codec;
 import reactor.io.codec.DelimitedCodec;
 import reactor.io.codec.LengthFieldCodec;
 import reactor.io.codec.StandardCodecs;
-import reactor.io.net.NetChannel;
-import reactor.io.net.NetServer;
-import reactor.io.net.codec.syslog.SyslogCodec;
-import reactor.io.net.netty.tcp.NettyTcpServer;
-import reactor.io.net.netty.udp.NettyDatagramServer;
-import reactor.io.net.spec.NetServerSpec;
-import reactor.io.net.tcp.TcpServer;
-import reactor.io.net.tcp.spec.TcpServers;
-import reactor.io.net.udp.DatagramServer;
-import reactor.io.net.udp.spec.DatagramServers;
+import reactor.net.codec.syslog.SyslogCodec;
+import reactor.net.net.NetChannel;
+import reactor.net.net.NetServer;
+import reactor.net.netty.tcp.NettyTcpServer;
+import reactor.net.netty.udp.NettyDatagramServer;
+import reactor.net.spec.NetServerSpec;
+import reactor.net.tcp.TcpServer;
+import reactor.net.tcp.spec.TcpServers;
+import reactor.net.udp.DatagramServer;
+import reactor.net.udp.spec.DatagramServers;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.io.net.NetServer}.
+ * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.net.net.NetServer}.
  *
  * @author Jon Brisbin
  */
