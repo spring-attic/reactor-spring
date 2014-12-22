@@ -16,7 +16,7 @@
 description = 'Reactor Spring Components'
 
 ext {
-	gradleVersion = '2.0'
+	gradleVersion = '2.1'
 	gradleScriptDir = "${rootProject.projectDir}/gradle"
 
 	// Languages
@@ -60,7 +60,7 @@ buildscript {
 		maven { url "http://repo.spring.io/plugins-release" }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4',
+		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7',
 							'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
 	}
 }
@@ -80,9 +80,9 @@ allprojects {
 		exclude module: "junit"
 	}
 
-	group = 'org.projectreactor.spring'
+	group = 'io.projectreactor.spring'
 	repositories {
-		//mavenLocal()
+		mavenLocal()
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 		mavenCentral()
 	}
@@ -179,7 +179,7 @@ project('reactor-spring-core') {
 	description = 'Reactor Spring Core Components'
 	dependencies {
 		// Reactor
-		compile "org.projectreactor:reactor-core:$reactorVersion"
+		compile "io.projectreactor:reactor-core:$reactorVersion"
 
 		// Spring
 		compile "org.springframework:spring-beans:$springVersion",
@@ -207,11 +207,11 @@ project('reactor-spring-messaging') {
 	dependencies {
 		// Reactor Spring
 		compile project(':reactor-spring-context'),
-				"org.projectreactor:reactor-net:$reactorVersion"
+				"io.projectreactor:reactor-net:$reactorVersion"
 
 		// Spring Messaging
 		compile("org.springframework:spring-messaging:$springVersion") {
-			exclude group: "org.projectreactor.spring", module: "reactor-net"
+			exclude group: "io.projectreactor.spring", module: "reactor-net"
 		}
 
 		testCompile "com.esotericsoftware.kryo:kryo:$kryoVersion",
