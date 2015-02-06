@@ -1,5 +1,7 @@
 package reactor.spring.messaging.factory.net;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.messaging.Message;
@@ -8,30 +10,33 @@ import org.springframework.messaging.support.GenericMessage;
 import reactor.Environment;
 import reactor.core.support.Assert;
 import reactor.fn.Consumer;
+import reactor.fn.Function;
 import reactor.io.codec.Codec;
 import reactor.io.codec.DelimitedCodec;
 import reactor.io.codec.LengthFieldCodec;
 import reactor.io.codec.StandardCodecs;
-import reactor.io.net.NetChannel;
-import reactor.io.net.NetServer;
+import reactor.io.net.ChannelStream;
+import reactor.io.net.NetStreams;
+import reactor.io.net.Server;
+import reactor.io.net.Spec;
 import reactor.io.net.codec.syslog.SyslogCodec;
-import reactor.io.net.netty.tcp.NettyTcpServer;
-import reactor.io.net.netty.udp.NettyDatagramServer;
-import reactor.io.net.spec.NetServerSpec;
+import reactor.io.net.http.HttpServer;
+import reactor.io.net.impl.netty.tcp.NettyTcpServer;
+import reactor.io.net.impl.netty.udp.NettyDatagramServer;
 import reactor.io.net.tcp.TcpServer;
-import reactor.io.net.tcp.spec.TcpServers;
 import reactor.io.net.udp.DatagramServer;
-import reactor.io.net.udp.spec.DatagramServers;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.io.net.NetServer}.
+ * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.io.net.Server}.
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
-public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecycle {
+public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> implements FactoryBean<Server<IN,
+		OUT, CONN>>, SmartLifecycle {
 
 	private final ReentrantLock startLock = new ReentrantLock();
 	private final Environment env;
@@ -40,9 +45,9 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	private int     phase       = 0;
 	private boolean autoStartup = true;
 
-	private Class<? extends NetServer> serverImpl;
-	private NetServer                  server;
-	private String                     dispatcher;
+	private Class<? extends Server> serverImpl;
+	private Server<IN, OUT, CONN>   server;
+	private String                  dispatcher;
 
 	private String host              = null;
 	private int    port              = 3000;
@@ -53,15 +58,15 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	private String transport         = "tcp";
 	private MessageHandler messageHandler;
 
-	public NetServerFactoryBean(Environment env) {this.env = env;}
+	public NetServerFactoryBean(Environment env) {
+		this.env = env;
+	}
 
 	/**
 	 * Set the name of the {@link reactor.core.Dispatcher} to use, which will be pulled from the current {@link
 	 * reactor.Environment}.
 	 *
-	 * @param dispatcher
-	 * 		dispatcher name
-	 *
+	 * @param dispatcher dispatcher name
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setDispatcher(String dispatcher) {
@@ -72,9 +77,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set the phase in which this bean should start.
 	 *
-	 * @param phase
-	 * 		the phase
-	 *
+	 * @param phase the phase
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setPhase(int phase) {
@@ -85,9 +88,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set whether to perform auto startup.
 	 *
-	 * @param autoStartup
-	 * 		{@code true} to enable auto startup, {@code false} otherwise
-	 *
+	 * @param autoStartup {@code true} to enable auto startup, {@code false} otherwise
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setAutoStartup(boolean autoStartup) {
@@ -98,9 +99,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set the host to which this server will bind.
 	 *
-	 * @param host
-	 * 		the host to bind to (defaults to {@code 0.0.0.0})
-	 *
+	 * @param host the host to bind to (defaults to {@code 0.0.0.0})
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setHost(String host) {
@@ -112,9 +111,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set the port to which this server will bind.
 	 *
-	 * @param port
-	 * 		the port to bind to (defaults to {@code 3000})
-	 *
+	 * @param port the port to bind to (defaults to {@code 3000})
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setPort(int port) {
@@ -133,17 +130,15 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code syslog} - Use the standard Syslog codec.</li>
 	 * </ul>
 	 *
-	 * @param codec
-	 * 		the codec
-	 *
+	 * @param codec the codec
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setCodec(String codec) {
-		if("bytes".equals(codec)) {
+		if ("bytes".equals(codec)) {
 			this.codec = StandardCodecs.BYTE_ARRAY_CODEC;
-		} else if("string".equals(codec)) {
+		} else if ("string".equals(codec)) {
 			this.codec = StandardCodecs.STRING_CODEC;
-		} else if("syslog".equals(codec)) {
+		} else if ("syslog".equals(codec)) {
 			this.codec = new SyslogCodec();
 		} else {
 			throw new IllegalArgumentException("Codec '" + codec + "' not recognized.");
@@ -161,9 +156,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * the rest of the message.</li>
 	 * </ul>
 	 *
-	 * @param framing
-	 * 		type of framing
-	 *
+	 * @param framing type of framing
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setFraming(String framing) {
@@ -180,8 +173,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code CR} - Means use a carriage return \\r.</li>
 	 * </ul>
 	 *
-	 * @param delimiter
-	 * 		the delimiter to use
+	 * @param delimiter the delimiter to use
 	 */
 	public NetServerFactoryBean setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
@@ -191,9 +183,8 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set the length of the length field if using length-field framing.
 	 *
-	 * @param lengthFieldLength
-	 * 		{@code 2} for a {@code short}, {@code 4} for an {@code int} (the default), or {@code 8} for a {@code long}
-	 *
+	 * @param lengthFieldLength {@code 2} for a {@code short}, {@code 4} for an {@code int} (the default), or {@code 8}
+	 *                          for a {@code long}
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setLengthFieldLength(int lengthFieldLength) {
@@ -210,15 +201,13 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	 * <li>{@code udp} - Use the built-in Netty UDP support.</li>
 	 * </ul>
 	 *
-	 * @param transport
-	 * 		the transport to use
-	 *
+	 * @param transport the transport to use
 	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setTransport(String transport) {
-		if("tcp".equals(transport)) {
+		if ("tcp".equals(transport)) {
 			this.serverImpl = NettyTcpServer.class;
-		} else if("udp".equals(transport)) {
+		} else if ("udp".equals(transport)) {
 			this.serverImpl = NettyDatagramServer.class;
 		} else {
 			throw new IllegalArgumentException("Transport must be either 'tcp' or 'udp'");
@@ -230,8 +219,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 	/**
 	 * Set the {@link org.springframework.messaging.MessageHandler} that will handle each incoming message.
 	 *
-	 * @param messageHandler
-	 * 		the {@link org.springframework.messaging.MessageHandler} to use
+	 * @param messageHandler the {@link org.springframework.messaging.MessageHandler} to use
 	 */
 	public NetServerFactoryBean setMessageHandler(MessageHandler messageHandler) {
 		this.messageHandler = messageHandler;
@@ -251,7 +239,7 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 			started = false;
 		} finally {
 			startLock.unlock();
-			if(null != callback) {
+			if (null != callback) {
 				callback.run();
 			}
 		}
@@ -290,73 +278,128 @@ public class NetServerFactoryBean implements FactoryBean<NetServer>, SmartLifecy
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public NetServer getObject() throws Exception {
-		if(null == server) {
-			InetSocketAddress bindAddress;
-			if(null == host) {
+	public Server<IN, OUT, CONN> getObject() throws Exception {
+		if (null == server) {
+			final InetSocketAddress bindAddress;
+			if (null == host) {
 				bindAddress = InetSocketAddress.createUnresolved("0.0.0.0", port);
 			} else {
 				bindAddress = new InetSocketAddress(host, port);
 			}
 
-			Codec framedCodec = null;
-			if("delimited".equals(framing)) {
-				if("LF".equals(delimiter)) {
+			final Codec framedCodec;
+			if ("delimited".equals(framing)) {
+				if ("LF".equals(delimiter)) {
 					framedCodec = new DelimitedCodec(this.codec);
-				} else if("CR".equals(delimiter)) {
-					framedCodec = new DelimitedCodec((byte)'\r', true, this.codec);
+				} else if ("CR".equals(delimiter)) {
+					framedCodec = new DelimitedCodec((byte) '\r', true, this.codec);
+				} else {
+					framedCodec = codec;
 				}
-			} else if("length".equals(framing)) {
+			} else if ("length".equals(framing)) {
 				framedCodec = new LengthFieldCodec(lengthFieldLength, this.codec);
-			}
-			if(null == framedCodec) {
+			} else {
 				framedCodec = codec;
 			}
 
-			Consumer<NetChannel> channelConsumer = new Consumer<NetChannel>() {
-				@Override
-				public void accept(NetChannel ch) {
-					ch.consume(new Consumer() {
-						@Override
-						public void accept(Object o) {
-							if(null == messageHandler) {
-								return;
-							}
-							Message<?> msg = new GenericMessage<Object>(o);
-							messageHandler.handleMessage(msg);
-						}
-					});
-				}
-			};
+			final Function<Spec.Server<IN, OUT, CONN, ?, ?>, Spec.Server<IN, OUT, CONN, ?, ?>> commonSpec =
+					new Function<Spec.Server<IN, OUT, CONN, ?, ?>, Spec.Server<IN, OUT, CONN, ?, ?>>() {
 
-			NetServerSpec spec;
-			if("tcp".equals(transport)) {
-				spec = TcpServers.create(env,
-				                         null == serverImpl
-				                         ? NettyTcpServer.class
-				                         : (Class<? extends TcpServer>)serverImpl);
-			} else if("udp".equals(transport)) {
-				spec = DatagramServers.create(env,
-				                              null == serverImpl
-				                              ? NettyDatagramServer.class
-				                              : (Class<? extends DatagramServer>)serverImpl);
+						@Override
+						public Spec.Server<IN, OUT, CONN, ?, ?> apply(Spec.Server<IN, OUT, CONN, ?, ?> s) {
+							if (dispatcher != null) {
+								s.dispatcher(dispatcher);
+							}
+							return s.env(env).codec(framedCodec).listen(bindAddress);
+						}
+					};
+
+			if ("tcp".equals(transport)) {
+				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>tcpServer(
+						null == serverImpl
+								? NettyTcpServer.class
+								: (Class<? extends TcpServer>) serverImpl,
+						new Function<Spec.TcpServer<IN, OUT>, Spec.TcpServer<IN, OUT>>() {
+							@Override
+							public Spec.TcpServer<IN, OUT> apply(Spec.TcpServer<IN, OUT> spec) {
+								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+								return spec;
+							}
+						});
+			} else if ("udp".equals(transport)) {
+				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>udpServer(
+						null == serverImpl
+								? DatagramServer.class
+								: (Class<? extends DatagramServer>) serverImpl,
+						new Function<Spec.DatagramServer<IN, OUT>, Spec.DatagramServer<IN, OUT>>() {
+							@Override
+							public Spec.DatagramServer<IN, OUT> apply(Spec.DatagramServer<IN, OUT> spec) {
+								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+								return spec;
+							}
+						});
+			} else if ("http".equals(transport)) {
+				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>httpServer(
+						null == serverImpl
+								? HttpServer.class
+								: (Class<? extends HttpServer>) serverImpl,
+						new Function<Spec.HttpServer<IN, OUT>, Spec.HttpServer<IN, OUT>>() {
+							@Override
+							public Spec.HttpServer<IN, OUT> apply(Spec.HttpServer<IN, OUT> spec) {
+								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+								return spec;
+							}
+						});
 			} else {
 				throw new IllegalArgumentException(transport + " not recognized as a valid transport type.");
 			}
 
-			if(null != dispatcher) { spec.dispatcher(dispatcher); }
+			if (server != null) {
+				server.subscribe(new Subscriber<CONN>() {
+					Subscription s;
 
-			server = (NetServer)spec.listen(bindAddress)
-			                        .codec(framedCodec)
-			                        .consume(channelConsumer)
-			                        .get();
+					@Override
+					public void onSubscribe(Subscription s) {
+						s.request(Long.MAX_VALUE);
+						this.s = s;
+					}
+
+					@Override
+					public void onNext(CONN ch) {
+						ch.consume(new Consumer<IN>() {
+							@Override
+							public void accept(IN o) {
+								if (null == messageHandler) {
+									return;
+								}
+								Message<IN> msg = new GenericMessage<IN>(o);
+								messageHandler.handleMessage(msg);
+							}
+						});
+					}
+
+					@Override
+					public void onError(Throwable t) {
+						if (s != null) {
+							s.cancel();
+						}
+					}
+
+					@Override
+					public void onComplete() {
+						if (s != null) {
+							s.cancel();
+						}
+					}
+				});
+			}
 		}
 		return server;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return NetServer.class;
+		return Server.class;
 	}
 
 	@Override
