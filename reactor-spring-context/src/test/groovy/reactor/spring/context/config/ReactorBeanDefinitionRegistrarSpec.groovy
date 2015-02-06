@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration
 import reactor.Environment
 import reactor.bus.Event
 import reactor.bus.EventBus
+import reactor.spring.context.annotation.Consumer
 import reactor.spring.context.annotation.ReplyTo
 import reactor.spring.context.annotation.Selector
 import spock.lang.Specification
@@ -65,7 +66,7 @@ class ReactorBeanDefinitionRegistrarSpec extends Specification {
 
 }
 
-@reactor.spring.context.annotation.Consumer
+@Consumer
 class LoggingConsumer {
 	@Autowired
 	EventBus eventBus
@@ -102,7 +103,7 @@ class LoggingConsumer {
 }
 
 @Configuration
-@EnableReactor("default")
+@EnableReactor
 public class ReactorConfig {
 
 	@Bean
