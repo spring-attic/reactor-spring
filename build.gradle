@@ -33,7 +33,7 @@ ext {
 	jsonPathVersion = '0.9.0'
 	kryoVersion = '2.22'
 	protobufVersion = '2.5.0'
-	reactorVersion = '2.0.0.BUILD-SNAPSHOT'
+	reactorVersion = '2.0.0.RC1'
 	springVersion = '4.1.3.RELEASE'
 	snappyVersion = '1.1.0.1'
 	openHftChronicleVersion = '2.0.3'
@@ -82,7 +82,7 @@ allprojects {
 
 	group = 'io.projectreactor.spring'
 	repositories {
-		mavenLocal()
+		//mavenLocal()
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 		mavenCentral()
 	}
