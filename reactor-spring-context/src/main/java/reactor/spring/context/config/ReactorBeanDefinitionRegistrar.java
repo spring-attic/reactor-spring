@@ -25,7 +25,6 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 	public void registerBeanDefinitions(AnnotationMetadata meta, BeanDefinitionRegistry registry) {
 		Map<String, Object> attrs = meta.getAnnotationAttributes(EnableReactor.class.getName());
 
-
 		// Create a root Enivronment
 		if (!registry.containsBeanDefinition(DEFAULT_ENV_NAME)) {
 			BeanDefinitionBuilder envBeanDef = BeanDefinitionBuilder.rootBeanDefinition(CreateOrReuseFactoryBean.class);
@@ -49,7 +48,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 					envSupplier = new Supplier<Environment>() {
 						@Override
 						public Environment get() {
-							return new Environment();
+							return Environment.initializeIfEmpty().assignErrorJournal();
 						}
 					};
 				}
