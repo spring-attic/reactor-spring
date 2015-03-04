@@ -7,9 +7,9 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
-import reactor.bus.registry.Registration;
 import reactor.core.dispatch.AbstractLifecycleDispatcher;
 import reactor.fn.Consumer;
+import reactor.fn.Pausable;
 import reactor.fn.timer.Timer;
 
 import java.util.ArrayList;
@@ -330,7 +330,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	                                              TimeUnit unit) {
 		long initialDelayInMs = convertToMillis(initialDelay, unit);
 		long periodInMs = convertToMillis(period, unit);
-		final AtomicReference<Registration> registration = new AtomicReference<Registration>();
+		final AtomicReference<Pausable> registration = new AtomicReference<Pausable>();
 
 		final Runnable task = new Runnable() {
 			@Override
@@ -339,7 +339,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 					command.run();
 				} catch (Throwable t) {
 					log.error(t.getMessage(), t);
-					Registration reg;
+					Pausable reg;
 					if (null != (reg = registration.get())) {
 						reg.cancel();
 					}
@@ -368,7 +368,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 		final long delayInMs = convertToMillis(initialDelay, unit);
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(command, null, initialDelayInMs);
 
-		final AtomicReference<Registration> registration = new AtomicReference<Registration>();
+		final AtomicReference<Pausable> registration = new AtomicReference<Pausable>();
 
 		final Consumer<Long> consumer = new Consumer<Long>() {
 			final Consumer<Long> self = this;
@@ -383,7 +383,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 							timer.submit(self, delayInMs, TimeUnit.MILLISECONDS);
 						} catch (Throwable t) {
 							log.error(t.getMessage(), t);
-							Registration reg;
+							Pausable reg;
 							if (null != (reg = registration.get())) {
 								reg.cancel();
 							}

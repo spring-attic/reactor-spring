@@ -79,7 +79,7 @@ class AnnotatedHandlerConfig {
 
 	@Bean
 	EventBus eventBus(Environment env) {
-		return env.rootBus
+		return EventBus.create(env)
 	}
 
 	@Bean

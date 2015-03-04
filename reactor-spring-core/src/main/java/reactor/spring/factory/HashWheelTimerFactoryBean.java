@@ -3,12 +3,12 @@ package reactor.spring.factory;
 import org.springframework.beans.factory.FactoryBean;
 import reactor.fn.Supplier;
 import reactor.fn.Suppliers;
-import reactor.fn.timer.SimpleHashWheelTimer;
+import reactor.fn.timer.HashWheelTimer;
 import reactor.fn.timer.Timer;
 
 /**
  * A {@link org.springframework.beans.factory.FactoryBean} implementation that provides {@link
- * reactor.fn.timer.SimpleHashWheelTimer HashWheelTimers} in a round-robin fashion. The default is to create a single timer but
+ * reactor.fn.timer.HashWheelTimer} in a round-robin fashion. The default is to create a single timer but
  * using the {@link #HashWheelTimerFactoryBean(int, int)} constructor, one can create a "pool" of timers which will be
  * handed out to requestors in a round-robin fashion.
  *
@@ -19,14 +19,14 @@ public class HashWheelTimerFactoryBean implements FactoryBean<Timer> {
 	private final Supplier<Timer> timers;
 
 	/**
-	 * Create a single {@link reactor.fn.timer.SimpleHashWheelTimer} with a default resolution of 50 milliseconds.
+	 * Create a single {@link reactor.fn.timer.HashWheelTimer} with a default resolution of 50 milliseconds.
 	 */
 	public HashWheelTimerFactoryBean() {
 		this(1, 50);
 	}
 
 	/**
-	 * Create {@code numOfTimers} number of {@link reactor.fn.timer.SimpleHashWheelTimer HashWheelTimers}.
+	 * Create {@code numOfTimers} number of {@link reactor.fn.timer.HashWheelTimer HashWheelTimers}.
 	 *
 	 * @param numOfTimers
 	 * 		the number of timers to create
@@ -36,7 +36,7 @@ public class HashWheelTimerFactoryBean implements FactoryBean<Timer> {
 	public HashWheelTimerFactoryBean(int numOfTimers, int resolution) {
 		Timer[] timers = new Timer[numOfTimers];
 		for(int i = 0; i < numOfTimers; i++) {
-			timers[i] = new SimpleHashWheelTimer(resolution);
+			timers[i] = new HashWheelTimer(resolution);
 		}
 		this.timers = Suppliers.roundRobin(timers);
 	}
@@ -47,7 +47,7 @@ public class HashWheelTimerFactoryBean implements FactoryBean<Timer> {
 	}
 
 	@Override public Class<?> getObjectType() {
-		return SimpleHashWheelTimer.class;
+		return HashWheelTimer.class;
 	}
 
 	@Override public boolean isSingleton() {

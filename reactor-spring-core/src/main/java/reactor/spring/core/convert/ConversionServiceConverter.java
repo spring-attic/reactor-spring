@@ -17,7 +17,7 @@
 package reactor.spring.core.convert;
 
 import org.springframework.core.convert.ConversionService;
-import reactor.bus.convert.Converter;
+import reactor.core.convert.Converter;
 
 /**
  * An adapter that allows a Spring {@link ConversionService} to be used as a {@link Converter}.

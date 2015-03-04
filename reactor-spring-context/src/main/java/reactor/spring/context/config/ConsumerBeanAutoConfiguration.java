@@ -21,8 +21,8 @@ import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import reactor.bus.Bus;
 import reactor.bus.Event;
-import reactor.bus.Observable;
 import reactor.bus.selector.Selectors;
 import reactor.core.support.StringUtils;
 import reactor.fn.Consumer;
@@ -36,8 +36,8 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static reactor.bus.selector.JsonPathSelector.jsonPathSelector;
 import static reactor.bus.selector.Selectors.*;
-import static reactor.io.routing.JsonPathSelector.jsonPathSelector;
 
 /**
  * {@link org.springframework.context.ApplicationListener} implementation that finds beans registered in the current
@@ -142,7 +142,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 
 		Consumer consumer;
-		Observable reactor;
+		Bus reactor;
 		Selector selectorAnno;
 		ReplyTo replyToAnno;
 		reactor.bus.selector.Selector selector;
@@ -151,7 +151,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			//scanAnnotation method
 			selectorAnno = AnnotationUtils.findAnnotation(method, Selector.class);
 			replyToAnno = AnnotationUtils.findAnnotation(method, ReplyTo.class);
-			reactor = fetchObservable(selectorAnno, bean);
+			reactor = fetchBus(selectorAnno, bean);
 			selector = fetchSelector(selectorAnno, bean, method);
 
 			//register [replyTo]consumer
@@ -186,7 +186,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		return (T) expressionParser.parseExpression(selector).getValue(evalCtx);
 	}
 
-	private Observable fetchObservable(Selector selectorAnno, Object bean) {
+	private Bus fetchBus(Selector selectorAnno, Object bean) {
 		return expression(selectorAnno.eventBus(), bean);
 	}
 
@@ -242,17 +242,17 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 	private final static class ReplyToServiceConsumer implements Consumer<Event> {
 
-		final private Observable reactor;
+		final private Bus reactor;
 		final private Object     replyToKey;
 		final private Invoker    handler;
 
-		ReplyToServiceConsumer(Observable reactor, Object replyToKey, Invoker handler) {
+		ReplyToServiceConsumer(Bus reactor, Object replyToKey, Invoker handler) {
 			this.reactor = reactor;
 			this.replyToKey = replyToKey;
 			this.handler = handler;
 		}
 
-		public Observable getReactor() {
+		public Bus getReactor() {
 			return reactor;
 		}
 
