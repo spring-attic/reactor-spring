@@ -7,8 +7,8 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.util.ObjectUtils;
 import reactor.bus.ringbuffer.Operation;
-import reactor.bus.ringbuffer.Processor;
-import reactor.bus.ringbuffer.spec.ProcessorSpec;
+import reactor.bus.ringbuffer.RingBatcher;
+import reactor.bus.ringbuffer.spec.RingBatcherSpec;
 import reactor.fn.Consumer;
 import reactor.fn.Supplier;
 import reactor.fn.support.DelegatingConsumer;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
- * Reactor {@link reactor.bus.ringbuffer.Processor} to publish messages for efficiency at high volumes.
+ * Reactor {@link reactor.bus.ringbuffer.RingBatcher} to publish messages for efficiency at high volumes.
  *
  * @author Jon Brisbin
  */
@@ -27,7 +27,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	private final Map<MessageHandler, Consumer>    messageHandlerConsumers = new ConcurrentHashMap<MessageHandler,
 			Consumer>();
 	private final DelegatingConsumer<MessageEvent> delegatingConsumer      = new DelegatingConsumer<MessageEvent>();
-	private final Processor<MessageEvent> processor;
+	private final RingBatcher<MessageEvent> processor;
 
 	private String beanName;
 
@@ -47,7 +47,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	 */
 	public ReactorSubscribableChannel(boolean singleThreadedProducer) {
 		this.beanName = String.format("%s@%s", getClass().getSimpleName(), ObjectUtils.getIdentityHexString(this));
-		ProcessorSpec<MessageEvent> spec = new ProcessorSpec<MessageEvent>()
+		RingBatcherSpec<MessageEvent> spec = new RingBatcherSpec<MessageEvent>()
 				.dataSupplier(new Supplier<MessageEvent>() {
 					@Override
 					public MessageEvent get() {
