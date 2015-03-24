@@ -6,9 +6,9 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.util.ObjectUtils;
-import reactor.bus.ringbuffer.Operation;
-import reactor.bus.ringbuffer.RingBatcher;
-import reactor.bus.ringbuffer.spec.RingBatcherSpec;
+import reactor.bus.batcher.Operation;
+import reactor.bus.batcher.OperationBatcher;
+import reactor.bus.batcher.spec.OperationBatcherSpec;
 import reactor.fn.Consumer;
 import reactor.fn.Supplier;
 import reactor.fn.support.DelegatingConsumer;
@@ -18,16 +18,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
- * Reactor {@link reactor.bus.ringbuffer.RingBatcher} to publish messages for efficiency at high volumes.
+ * Reactor {@link reactor.bus.batcher.OperationBatcher} to publish messages for efficiency at high volumes.
  *
  * @author Jon Brisbin
  */
 public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel, SubscribableChannel {
 
-	private final Map<MessageHandler, Consumer>    messageHandlerConsumers = new ConcurrentHashMap<MessageHandler,
-			Consumer>();
-	private final DelegatingConsumer<MessageEvent> delegatingConsumer      = new DelegatingConsumer<MessageEvent>();
-	private final RingBatcher<MessageEvent> processor;
+	private final Map<MessageHandler, Consumer>
+			messageHandlerConsumers =
+			new ConcurrentHashMap<MessageHandler, Consumer>();
+
+	private final DelegatingConsumer<MessageEvent> delegatingConsumer = new DelegatingConsumer<MessageEvent>();
+
+	private final OperationBatcher<MessageEvent> processor;
 
 	private String beanName;
 
@@ -42,12 +45,11 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	 * Create a {@literal ReactorSubscribableChannel} with a {@code ProducerType.SINGLE} if {@code
 	 * singleThreadedProducer} is {@code true}, otherwise use {@code ProducerType.MULTI}.
 	 *
-	 * @param singleThreadedProducer
-	 * 		whether to create a single-threaded producer or not
+	 * @param singleThreadedProducer whether to create a single-threaded producer or not
 	 */
 	public ReactorSubscribableChannel(boolean singleThreadedProducer) {
 		this.beanName = String.format("%s@%s", getClass().getSimpleName(), ObjectUtils.getIdentityHexString(this));
-		RingBatcherSpec<MessageEvent> spec = new RingBatcherSpec<MessageEvent>()
+		OperationBatcherSpec<MessageEvent> spec = new OperationBatcherSpec<MessageEvent>()
 				.dataSupplier(new Supplier<MessageEvent>() {
 					@Override
 					public MessageEvent get() {
@@ -55,7 +57,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 					}
 				})
 				.consume(delegatingConsumer);
-		if(singleThreadedProducer) {
+		if (singleThreadedProducer) {
 			spec.singleThreadedProducer();
 		} else {
 			spec.multiThreadedProducer();
@@ -89,7 +91,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@Override
 	public boolean unsubscribe(MessageHandler handler) {
 		Consumer<MessageEvent> consumer = messageHandlerConsumers.remove(handler);
-		if(null == consumer) {
+		if (null == consumer) {
 			return false;
 		}
 		delegatingConsumer.remove(consumer);
