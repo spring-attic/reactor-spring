@@ -29,6 +29,25 @@ class ListenableFutureProcessorSpec extends Specification {
 
   }
 
+  def "ListenableFutureProcessor is completable"() {
+
+    given:
+      def val = ""
+      def f = new ListenableFutureProcessor()
+      def b = Broadcaster.create()
+      b.consume {
+        val = it
+      }
+      f.subscribe(b)
+
+    when: 'a value is pushed downstream'
+      f.onNext("Hello World!")
+
+    then: 'the value is available'
+      val == 'Hello World!'
+
+  }
+
   def "AdaptingListenableFutureProcessor adapts values"() {
 
     given:
