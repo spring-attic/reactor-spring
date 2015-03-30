@@ -10,9 +10,9 @@ import spock.lang.Specification
 /**
  * Created by jbrisbin on 3/30/15.
  */
-class ListenableFutureSubscriberSpec extends Specification {
+class ListenableFutureProcessorSpec extends Specification {
 
-  def "ListenableFutureSubscriber listens for values"() {
+  def "ListenableFutureProcessor listens for values"() {
 
     given:
       def val = ""
@@ -29,7 +29,7 @@ class ListenableFutureSubscriberSpec extends Specification {
 
   }
 
-  def "AdaptingListenableFutureSubscriber adapts values"() {
+  def "AdaptingListenableFutureProcessor adapts values"() {
 
     given:
       int val = 0
@@ -51,7 +51,7 @@ class ListenableFutureSubscriberSpec extends Specification {
 
   }
 
-  def "ListenableFutureSubscriber listens for errors"() {
+  def "ListenableFutureProcessor listens for errors"() {
 
     given:
       def error = null
