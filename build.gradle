@@ -176,7 +176,8 @@ project('reactor-spring-core') {
 	description = 'Reactor Spring Core Components'
 	dependencies {
 		// Reactor
-		compile "io.projectreactor:reactor-bus:$reactorVersion"
+		compile "io.projectreactor:reactor-bus:$reactorVersion",
+				"io.projectreactor:reactor-stream:$reactorVersion"
 
 		// Spring
 		compile "org.springframework:spring-beans:$springVersion",
