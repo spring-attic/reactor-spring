@@ -302,11 +302,11 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 				framedCodec = codec;
 			}
 
-			final Function<Spec.Server<IN, OUT, CONN, ?, ?>, Spec.Server<IN, OUT, CONN, ?, ?>> commonSpec =
-					new Function<Spec.Server<IN, OUT, CONN, ?, ?>, Spec.Server<IN, OUT, CONN, ?, ?>>() {
+			final Function<Spec.ServerSpec<IN, OUT, CONN, ?, ?>, Spec.ServerSpec<IN, OUT, CONN, ?, ?>> commonSpec =
+					new Function<Spec.ServerSpec<IN, OUT, CONN, ?, ?>, Spec.ServerSpec<IN, OUT, CONN, ?, ?>>() {
 
 						@Override
-						public Spec.Server<IN, OUT, CONN, ?, ?> apply(Spec.Server<IN, OUT, CONN, ?, ?> s) {
+						public Spec.ServerSpec<IN, OUT, CONN, ?, ?> apply(Spec.ServerSpec<IN, OUT, CONN, ?, ?> s) {
 							if (dispatcher != null) {
 								s.dispatcher(dispatcher);
 							}
@@ -319,10 +319,10 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 						null == serverImpl
 								? NettyTcpServer.class
 								: (Class<? extends TcpServer>) serverImpl,
-						new Function<Spec.TcpServer<IN, OUT>, Spec.TcpServer<IN, OUT>>() {
+						new Function<Spec.TcpServerSpec<IN, OUT>, Spec.TcpServerSpec<IN, OUT>>() {
 							@Override
-							public Spec.TcpServer<IN, OUT> apply(Spec.TcpServer<IN, OUT> spec) {
-								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+							public Spec.TcpServerSpec<IN, OUT> apply(Spec.TcpServerSpec<IN, OUT> spec) {
+								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});
@@ -331,10 +331,10 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 						null == serverImpl
 								? DatagramServer.class
 								: (Class<? extends DatagramServer>) serverImpl,
-						new Function<Spec.DatagramServer<IN, OUT>, Spec.DatagramServer<IN, OUT>>() {
+						new Function<Spec.DatagramServerSpec<IN, OUT>, Spec.DatagramServerSpec<IN, OUT>>() {
 							@Override
-							public Spec.DatagramServer<IN, OUT> apply(Spec.DatagramServer<IN, OUT> spec) {
-								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+							public Spec.DatagramServerSpec<IN, OUT> apply(Spec.DatagramServerSpec<IN, OUT> spec) {
+								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});
@@ -343,10 +343,10 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 						null == serverImpl
 								? HttpServer.class
 								: (Class<? extends HttpServer>) serverImpl,
-						new Function<Spec.HttpServer<IN, OUT>, Spec.HttpServer<IN, OUT>>() {
+						new Function<Spec.HttpServerSpec<IN, OUT>, Spec.HttpServerSpec<IN, OUT>>() {
 							@Override
-							public Spec.HttpServer<IN, OUT> apply(Spec.HttpServer<IN, OUT> spec) {
-								commonSpec.apply((Spec.Server<IN, OUT, CONN, ?, ?>) spec);
+							public Spec.HttpServerSpec<IN, OUT> apply(Spec.HttpServerSpec<IN, OUT> spec) {
+								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});

@@ -79,7 +79,7 @@ allprojects {
 
 	group = 'io.projectreactor.spring'
 	repositories {
-		//mavenLocal()
+		mavenLocal()
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 		mavenCentral()
 	}
