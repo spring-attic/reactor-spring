@@ -1,7 +1,6 @@
 package reactor.spring.messaging.factory.net;
 
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
+import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.messaging.Message;
@@ -15,39 +14,62 @@ import reactor.io.codec.Codec;
 import reactor.io.codec.DelimitedCodec;
 import reactor.io.codec.LengthFieldCodec;
 import reactor.io.codec.StandardCodecs;
-import reactor.io.net.ChannelStream;
-import reactor.io.net.NetStreams;
-import reactor.io.net.Server;
-import reactor.io.net.Spec;
+import reactor.io.net.*;
 import reactor.io.net.codec.syslog.SyslogCodec;
 import reactor.io.net.http.HttpServer;
 import reactor.io.net.impl.netty.tcp.NettyTcpServer;
 import reactor.io.net.impl.netty.udp.NettyDatagramServer;
 import reactor.io.net.tcp.TcpServer;
 import reactor.io.net.udp.DatagramServer;
+import reactor.rx.Streams;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@link org.springframework.beans.factory.FactoryBean} for creating a Reactor {@link reactor.io.net.Server}.
+ * {@link org.springframework.beans.factory.FactoryBean} for creating a {@link reactor.io.net.ReactorPeer}.
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
  */
-public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> implements FactoryBean<Server<IN,
-		OUT, CONN>>, SmartLifecycle {
+public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>>
+		implements FactoryBean<ReactorPeer<IN, OUT, CONN>>, SmartLifecycle {
 
 	private final ReentrantLock startLock = new ReentrantLock();
 	private final Environment env;
+
+	private final Consumer<IN> consumer = new Consumer<IN>() {
+		@Override
+		public void accept(IN o) {
+			if (null == messageHandler) {
+				return;
+			}
+			Message<IN> msg = new GenericMessage<IN>(o);
+			messageHandler.handleMessage(msg);
+		}
+	};
+
+	private final ReactorChannelHandler<IN, OUT, CONN> handler = new ReactorChannelHandler<IN, OUT, CONN>() {
+		@Override
+		public Publisher<Void> apply(CONN conn) {
+			if (null == messageHandler) {
+				Streams.empty();
+			}
+
+			conn.consume(consumer);
+
+			return Streams.never();
+		}
+	};
+
 	private volatile boolean started = false;
 
 	private int     phase       = 0;
 	private boolean autoStartup = true;
 
-	private Class<? extends Server> serverImpl;
-	private Server<IN, OUT, CONN>   server;
-	private String                  dispatcher;
+	private Class<? extends ReactorPeer> serverImpl;
+	private ReactorPeer<IN, OUT, CONN>   server;
+	private String                       dispatcher;
 
 	private String host              = null;
 	private int    port              = 3000;
@@ -174,6 +196,8 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 	 * </ul>
 	 *
 	 * @param delimiter the delimiter to use
+	 *
+	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
@@ -220,6 +244,8 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 	 * Set the {@link org.springframework.messaging.MessageHandler} that will handle each incoming message.
 	 *
 	 * @param messageHandler the {@link org.springframework.messaging.MessageHandler} to use
+	 *
+	 * @return {@literal this}
 	 */
 	public NetServerFactoryBean setMessageHandler(MessageHandler messageHandler) {
 		this.messageHandler = messageHandler;
@@ -249,7 +275,7 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 	public void start() {
 		startLock.lock();
 		try {
-			server.start();
+			server.start(handler);
 			started = true;
 		} finally {
 			startLock.unlock();
@@ -278,7 +304,7 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Server<IN, OUT, CONN> getObject() throws Exception {
+	public ReactorPeer<IN, OUT, CONN> getObject() throws Exception {
 		if (null == server) {
 			final InetSocketAddress bindAddress;
 			if (null == host) {
@@ -302,11 +328,11 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 				framedCodec = codec;
 			}
 
-			final Function<Spec.ServerSpec<IN, OUT, CONN, ?, ?>, Spec.ServerSpec<IN, OUT, CONN, ?, ?>> commonSpec =
-					new Function<Spec.ServerSpec<IN, OUT, CONN, ?, ?>, Spec.ServerSpec<IN, OUT, CONN, ?, ?>>() {
+			final Function<Spec.PeerSpec<IN, OUT, CONN, ?, ?>, Spec.PeerSpec<IN, OUT, CONN, ?, ?>> commonSpec =
+					new Function<Spec.PeerSpec<IN, OUT, CONN, ?, ?>, Spec.PeerSpec<IN, OUT, CONN, ?, ?>>() {
 
 						@Override
-						public Spec.ServerSpec<IN, OUT, CONN, ?, ?> apply(Spec.ServerSpec<IN, OUT, CONN, ?, ?> s) {
+						public Spec.PeerSpec<IN, OUT, CONN, ?, ?> apply(Spec.PeerSpec<IN, OUT, CONN, ?, ?> s) {
 							if (dispatcher != null) {
 								s.dispatcher(dispatcher);
 							}
@@ -315,83 +341,44 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 					};
 
 			if ("tcp".equals(transport)) {
-				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>tcpServer(
+				server = (ReactorPeer<IN, OUT, CONN>) NetStreams.<IN, OUT>tcpServer(
 						null == serverImpl
 								? NettyTcpServer.class
 								: (Class<? extends TcpServer>) serverImpl,
-						new Function<Spec.TcpServerSpec<IN, OUT>, Spec.TcpServerSpec<IN, OUT>>() {
+						new NetStreams.TcpServerFactory<IN, OUT>() {
 							@Override
 							public Spec.TcpServerSpec<IN, OUT> apply(Spec.TcpServerSpec<IN, OUT> spec) {
-								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
+								commonSpec.apply((Spec.PeerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});
 			} else if ("udp".equals(transport)) {
-				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>udpServer(
+				server = (ReactorPeer<IN, OUT, CONN>) NetStreams.<IN, OUT>udpServer(
 						null == serverImpl
 								? DatagramServer.class
 								: (Class<? extends DatagramServer>) serverImpl,
-						new Function<Spec.DatagramServerSpec<IN, OUT>, Spec.DatagramServerSpec<IN, OUT>>() {
+						new NetStreams.UdpServerFactory<IN, OUT>() {
 							@Override
 							public Spec.DatagramServerSpec<IN, OUT> apply(Spec.DatagramServerSpec<IN, OUT> spec) {
-								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
+								commonSpec.apply((Spec.PeerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});
 			} else if ("http".equals(transport)) {
-				server = (Server<IN, OUT, CONN>) NetStreams.<IN, OUT>httpServer(
+				server = (ReactorPeer<IN, OUT, CONN>) NetStreams.<IN, OUT>httpServer(
 						null == serverImpl
 								? HttpServer.class
 								: (Class<? extends HttpServer>) serverImpl,
-						new Function<Spec.HttpServerSpec<IN, OUT>, Spec.HttpServerSpec<IN, OUT>>() {
+						new NetStreams.HttpServerFactory<IN, OUT>() {
+
 							@Override
 							public Spec.HttpServerSpec<IN, OUT> apply(Spec.HttpServerSpec<IN, OUT> spec) {
-								commonSpec.apply((Spec.ServerSpec<IN, OUT, CONN, ?, ?>) spec);
+								commonSpec.apply((Spec.PeerSpec<IN, OUT, CONN, ?, ?>) spec);
 								return spec;
 							}
 						});
 			} else {
 				throw new IllegalArgumentException(transport + " not recognized as a valid transport type.");
-			}
-
-			if (server != null) {
-				server.subscribe(new Subscriber<CONN>() {
-					Subscription s;
-
-					@Override
-					public void onSubscribe(Subscription s) {
-						s.request(Long.MAX_VALUE);
-						this.s = s;
-					}
-
-					@Override
-					public void onNext(CONN ch) {
-						ch.consume(new Consumer<IN>() {
-							@Override
-							public void accept(IN o) {
-								if (null == messageHandler) {
-									return;
-								}
-								Message<IN> msg = new GenericMessage<IN>(o);
-								messageHandler.handleMessage(msg);
-							}
-						});
-					}
-
-					@Override
-					public void onError(Throwable t) {
-						if (s != null) {
-							s.cancel();
-						}
-					}
-
-					@Override
-					public void onComplete() {
-						if (s != null) {
-							s.cancel();
-						}
-					}
-				});
 			}
 		}
 		return server;
@@ -399,7 +386,7 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>> 
 
 	@Override
 	public Class<?> getObjectType() {
-		return Server.class;
+		return ReactorPeer.class;
 	}
 
 	@Override
