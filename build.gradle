@@ -148,9 +148,6 @@ subprojects { subproject ->
 		// Logging
 		compile "org.slf4j:slf4j-api:$slf4jVersion"
 
-		// JSR-305 annotations
-		optional "com.google.code.findbugs:jsr305:2.0.0"
-
 		// Testing
 		testCompile "org.codehaus.groovy:groovy-all:$groovyVersion",
 				"org.spockframework:spock-core:$spockVersion",
