@@ -1,36 +1,34 @@
 package reactor.spring.messaging;
 
+import org.reactivestreams.Processor;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.util.ObjectUtils;
-import reactor.bus.batcher.Operation;
-import reactor.bus.batcher.OperationBatcher;
-import reactor.bus.batcher.spec.OperationBatcherSpec;
+import reactor.core.processor.RingBufferProcessor;
 import reactor.fn.Consumer;
-import reactor.fn.Supplier;
-import reactor.fn.support.DelegatingConsumer;
+import reactor.rx.Streams;
+import reactor.rx.action.Control;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
- * Reactor {@link reactor.bus.batcher.OperationBatcher} to publish messages for efficiency at high volumes.
+ * Reactor {@link reactor.core.processor.RingBufferProcessor} to publish messages for efficiency at high volumes.
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
 public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel, SubscribableChannel {
 
-	private final Map<MessageHandler, Consumer>
+	private final Map<MessageHandler, Control>
 			messageHandlerConsumers =
-			new ConcurrentHashMap<MessageHandler, Consumer>();
+			new ConcurrentHashMap<MessageHandler, Control>();
 
-	private final DelegatingConsumer<MessageEvent> delegatingConsumer = new DelegatingConsumer<MessageEvent>();
-
-	private final OperationBatcher<MessageEvent> processor;
+	private final Processor<Message<?>, Message<?>> processor;
 
 	private String beanName;
 
@@ -49,20 +47,11 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	 */
 	public ReactorSubscribableChannel(boolean singleThreadedProducer) {
 		this.beanName = String.format("%s@%s", getClass().getSimpleName(), ObjectUtils.getIdentityHexString(this));
-		OperationBatcherSpec<MessageEvent> spec = new OperationBatcherSpec<MessageEvent>()
-				.dataSupplier(new Supplier<MessageEvent>() {
-					@Override
-					public MessageEvent get() {
-						return new MessageEvent();
-					}
-				})
-				.consume(delegatingConsumer);
 		if (singleThreadedProducer) {
-			spec.singleThreadedProducer();
+			this.processor = RingBufferProcessor.create();
 		} else {
-			spec.multiThreadedProducer();
+			this.processor = RingBufferProcessor.share();
 		}
-		this.processor = spec.get();
 	}
 
 	@Override
@@ -76,25 +65,26 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 
 	@Override
 	public boolean subscribe(final MessageHandler handler) {
-		Consumer<MessageEvent> consumer = new Consumer<MessageEvent>() {
+		Consumer<Message<?>> consumer = new Consumer<Message<?>>() {
 			@Override
-			public void accept(MessageEvent ev) {
-				handler.handleMessage(ev.message);
+			public void accept(Message<?> ev) {
+				handler.handleMessage(ev);
 			}
 		};
-		messageHandlerConsumers.put(handler, consumer);
-		delegatingConsumer.add(consumer);
+		Control c = Streams.wrap(processor).consume(consumer);
+		messageHandlerConsumers.put(handler, c);
+
 		return true;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean unsubscribe(MessageHandler handler) {
-		Consumer<MessageEvent> consumer = messageHandlerConsumers.remove(handler);
-		if (null == consumer) {
+		Control control = messageHandlerConsumers.remove(handler);
+		if (null == control) {
 			return false;
 		}
-		delegatingConsumer.remove(consumer);
+		control.cancel();
 		return true;
 	}
 
@@ -105,14 +95,8 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 
 	@Override
 	public boolean send(Message<?> message, long timeout) {
-		Operation<MessageEvent> op = processor.prepare();
-		op.get().message = message;
-		op.commit();
+		processor.onNext(message);
 		return true;
-	}
-
-	private static class MessageEvent {
-		Message<?> message;
 	}
 
 }
