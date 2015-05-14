@@ -16,7 +16,7 @@ import reactor.bus.selector.Selector;
  *
  * @author Jon Brisbin
  */
-public class ExpressionSelector extends ObjectSelector<Expression> {
+public class ExpressionSelector extends ObjectSelector<Object, Expression> {
 
 	private static final SpelExpressionParser SPEL_PARSER = new SpelExpressionParser();
 
