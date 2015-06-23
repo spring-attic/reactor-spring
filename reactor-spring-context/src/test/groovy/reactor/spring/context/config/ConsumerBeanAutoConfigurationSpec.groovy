@@ -32,12 +32,8 @@ import reactor.spring.context.annotation.Selector
 import reactor.spring.context.annotation.SelectorType
 import spock.lang.Specification
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-
-import static reactor.bus.selector.Selectors.$
 
 /**
  * @author Jon Brisbin
