@@ -346,7 +346,7 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 			if (!argTypes[0].isAssignableFrom(ev.getClass())
 					&& conversionService.canConvert(ev.getClass(), argTypes[0])) {
-				ReflectionUtils.invokeMethod(method, bean, conversionService.convert(ev, argTypes[0]));
+				return ReflectionUtils.invokeMethod(method, bean, conversionService.convert(ev, argTypes[0]));
 			}
 
 			if (conversionService.canConvert(ev.getData().getClass(), argTypes[0])) {
