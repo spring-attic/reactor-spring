@@ -401,8 +401,12 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 		}
 
 		private Field findField(Object target, final String name) {
-			final int cacheKey = target.hashCode() & name.hashCode();
-			if (!fieldCache.containsKey(cacheKey)) {
+			final int cacheKey = target.hashCode() ^ name.hashCode();
+			Field result = fieldCache.get(cacheKey);
+			if (result==null || !result.getDeclaringClass().isInstance(target)) {
+				// either the cache does not yet contain the field or we have the unlikely case
+				// then the hash code of two objects of different classes is equal.
+				// In this case, a re-lookup is done.
 				ReflectionUtils.doWithFields(
 						target.getClass(),
 						new ReflectionUtils.FieldCallback() {
@@ -415,8 +419,9 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 							}
 						}
 				);
+				result = fieldCache.get(cacheKey);
 			}
-			return fieldCache.get(cacheKey);
+			return result;
 		}
 	}
 
