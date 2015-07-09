@@ -2,9 +2,10 @@ package reactor.spring.factory;
 
 import org.springframework.beans.factory.FactoryBean;
 import reactor.fn.Supplier;
-import reactor.fn.Suppliers;
 import reactor.fn.timer.HashWheelTimer;
 import reactor.fn.timer.Timer;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A {@link org.springframework.beans.factory.FactoryBean} implementation that provides {@link
@@ -38,7 +39,15 @@ public class HashWheelTimerFactoryBean implements FactoryBean<Timer> {
 		for(int i = 0; i < numOfTimers; i++) {
 			timers[i] = new HashWheelTimer(resolution);
 		}
-		this.timers = Suppliers.roundRobin(timers);
+
+		final AtomicInteger count = new AtomicInteger();
+		final int len = timers.length;
+
+		this.timers = new Supplier<Timer>() {
+			@Override public Timer get() {
+				return timers[count.getAndIncrement() % len];
+			}
+		};
 	}
 
 	@Override
