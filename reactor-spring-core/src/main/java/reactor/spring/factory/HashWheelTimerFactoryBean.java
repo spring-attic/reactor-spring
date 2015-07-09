@@ -35,7 +35,7 @@ public class HashWheelTimerFactoryBean implements FactoryBean<Timer> {
 	 * 		the resolution of the timers, in milliseconds
 	 */
 	public HashWheelTimerFactoryBean(int numOfTimers, int resolution) {
-		Timer[] timers = new Timer[numOfTimers];
+		final Timer[] timers = new Timer[numOfTimers];
 		for(int i = 0; i < numOfTimers; i++) {
 			timers[i] = new HashWheelTimer(resolution);
 		}
