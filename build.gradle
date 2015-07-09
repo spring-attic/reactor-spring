@@ -40,7 +40,7 @@ ext {
 
 	// Testing
 	mockitoVersion = '1.9.5'
-	spockVersion = '0.7-groovy-2.0'
+	spockVersion = '1.0-groovy-2.4'
 
 	// Code coverage
 	jacocoVersion = '0.7.0.201403182114'
@@ -60,7 +60,7 @@ buildscript {
 	}
 	dependencies {
 		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7',
-							'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
+							'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
 	}
 }
 
@@ -74,7 +74,6 @@ allprojects {
 
 	configurations.all {
 		exclude group: "commons-logging"
-		exclude module: "junit"
 	}
 
 	group = 'io.projectreactor.spring'
@@ -98,8 +97,12 @@ subprojects { subproject ->
 			maven { url 'http://repo.spring.io/libs-milestone' }
 		}
 
-		dependencies {
-			springIoVersions "io.spring.platform:platform-versions:$platformVersion@properties"
+		dependencyManagement {
+			springIoTestRuntime {
+				imports {
+					mavenBom "io.spring.platform:platform-bom:$platformVersion"
+				}
+			}
 		}
 	}
 
