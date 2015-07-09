@@ -40,7 +40,7 @@ ext {
 
 	// Testing
 	mockitoVersion = '1.9.5'
-	spockVersion = '0.7-groovy-2.0'
+	spockVersion = '1.0-groovy-2.4'
 
 	// Code coverage
 	jacocoVersion = '0.7.0.201403182114'
@@ -74,7 +74,6 @@ allprojects {
 
 	configurations.all {
 		exclude group: "commons-logging"
-		exclude module: "junit"
 	}
 
 	group = 'io.projectreactor.spring'
