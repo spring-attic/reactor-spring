@@ -266,7 +266,14 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 		@Override
 		public void accept(Event ev) {
-			Object result = handler.apply(ev);
+			Object result = null;
+			try {
+				result = handler.apply(ev);
+			} catch (Exception ex) {
+				if(ev.getErrorConsumer() != null) {
+					ev.consumeError(ex);
+				}
+			}
 			Object _replyToKey = replyToKey != null ? replyToKey : ev.getReplyTo();
 			if (_replyToKey != null) {
 				reactor.notify(_replyToKey, Event.wrap(result));
