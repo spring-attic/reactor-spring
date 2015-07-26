@@ -16,6 +16,7 @@
 package reactor.spring.context.config
 
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.InheritConstructors
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
@@ -40,7 +41,6 @@ import java.util.concurrent.TimeUnit
  * @author Stephane Maldini
  */
 class ConsumerBeanAutoConfigurationSpec extends Specification {
-
 	def "Annotated Consumer is wired to a Reactor"() {
 
 		given:
@@ -76,12 +76,37 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
             handlerBean.latch.await(1, TimeUnit.SECONDS)
 
     }
+	
+	def "Annotated Consumer with Method that throws RuntimeException should use event's errorConsumer"() {
+        given:
+            "an ApplicationContext with an annotated bean handler"
+            def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+            def reactor = appCtx.getBean(EventBus)
+            final errorConsumedLatch = new CountDownLatch(1)
+
+        when:
+            "Event has an errorConsumer and event handler throws an error"
+			Event<String> ev = new Event(null, "Hello", { t ->
+                errorConsumedLatch.countDown()
+            })
+            reactor.notify('throws.exception', ev)
+
+        then:
+            "errorConsumer method has been invoked"
+            errorConsumedLatch.await(1, TimeUnit.SECONDS)
+		
+	}
 
 }
 
 @EqualsAndHashCode
 class CustomEvent {
     String data
+}
+
+
+@InheritConstructors
+class CustomRuntimeException extends RuntimeException {
 }
 
 @Consumer
@@ -107,6 +132,12 @@ class HandlerBean {
         println "Received response: ${ev.data}"
         latch.countDown()
     }
+	
+	@Selector(value = 'throws.exception')
+    @ReplyTo
+	String handleString(Event<String> ev) {
+		throw new CustomRuntimeException("This is an exception"); 
+	}
 }
 
 class EventToCustomEventConverter implements Converter<Event, CustomEvent> {
