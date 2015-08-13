@@ -73,7 +73,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 
         then:
             "the method has been invoked"
-            handlerBean.latch.await(1, TimeUnit.SECONDS)
+            handlerBean.latch.await(30, TimeUnit.SECONDS)
 
     }
 	
@@ -86,7 +86,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 
         when:
             "Event has an errorConsumer and event handler throws an error"
-			Event<String> ev = new Event(null, "Hello", { t ->
+		        Event<String> ev = new Event(null, "Hello", { t ->
                 errorConsumedLatch.countDown()
             })
             reactor.notify('throws.exception', ev)
