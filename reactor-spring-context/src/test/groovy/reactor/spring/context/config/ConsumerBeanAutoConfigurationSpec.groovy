@@ -136,7 +136,7 @@ class HandlerBean {
 	@Selector(value = 'throws.exception')
 	@ReplyTo
 	String handleString(Event<String> ev) {
-		throw new CustomRuntimeException("This is an exception");
+		throw new CustomRuntimeException('This is an exception');
 	}
 }
 
