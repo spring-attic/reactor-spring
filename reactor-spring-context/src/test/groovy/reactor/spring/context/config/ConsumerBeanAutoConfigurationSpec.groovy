@@ -44,64 +44,64 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 	def "Annotated Consumer is wired to a Reactor"() {
 
 		given:
-		"an ApplicationContext with an annotated bean handler"
-		def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
-		def handlerBean = appCtx.getBean(HandlerBean)
-		def reactor = appCtx.getBean(EventBus)
+			"an ApplicationContext with an annotated bean handler"
+			def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+			def handlerBean = appCtx.getBean(HandlerBean)
+			def reactor = appCtx.getBean(EventBus)
 
 		when:
-		"an Event is emitted onto the Reactor in context"
-		reactor.notify('/a/b', Event.wrap("Hello World!"))
+			"an Event is emitted onto the Reactor in context"
+			reactor.notify('/a/b', Event.wrap("Hello World!"))
 
 		then:
-		"the method has been invoked"
-		handlerBean.latch.await(1, TimeUnit.SECONDS)
+			"the method has been invoked"
+			handlerBean.latch.await(1, TimeUnit.SECONDS)
 
 	}
 
-    def "Annotated Consumer with custom type is wired and the selector method is invoked after converting the value"() {
+	def "Annotated Consumer with custom type is wired and the selector method is invoked after converting the value"() {
 
-        given:
-            "an ApplicationContext with an annotated bean handler"
-            def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
-            def handlerBean = appCtx.getBean(HandlerBean)
-            def reactor = appCtx.getBean(EventBus)
+		given:
+			"an ApplicationContext with an annotated bean handler"
+			def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+			def handlerBean = appCtx.getBean(HandlerBean)
+			def reactor = appCtx.getBean(EventBus)
 
-        when:
-            "an Event is emitted onto the Reactor in context"
-            reactor.send('customEvent.sink', Event.wrap("Hello").setReplyTo('customEventReply.sink'))
+		when:
+			"an Event is emitted onto the Reactor in context"
+			reactor.send('customEvent.sink', Event.wrap("Hello").setReplyTo('customEventReply.sink'))
 
-        then:
-            "the method has been invoked"
-            handlerBean.latch.await(30, TimeUnit.SECONDS)
+		then:
+			"the method has been invoked"
+			handlerBean.latch.await(1, TimeUnit.SECONDS)
 
-    }
-	
+	}
+
 	def "Annotated Consumer with Method that throws RuntimeException should use event's errorConsumer"() {
-        given:
-            "an ApplicationContext with an annotated bean handler"
-            def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
-            def reactor = appCtx.getBean(EventBus)
-            final errorConsumedLatch = new CountDownLatch(1)
+		given:
+			"an ApplicationContext with an annotated bean handler"
+			def appCtx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+			def reactor = appCtx.getBean(EventBus)
+			final errorConsumedLatch = new CountDownLatch(1)
 
-        when:
-            "Event has an errorConsumer and event handler throws an error"
-		        Event<String> ev = new Event(null, "Hello", { t ->
-                errorConsumedLatch.countDown()
-            })
-            reactor.notify('throws.exception', ev)
+		when:
+			"Event has an errorConsumer and event handler throws an error"
+			Event<String> ev = new Event(null, "Hello", { t ->
+				errorConsumedLatch.countDown()
+			})
+			reactor.notify('throws.exception', ev)
 
-        then:
-            "errorConsumer method has been invoked"
-            errorConsumedLatch.await(1, TimeUnit.SECONDS)
-		
+		then:
+			"errorConsumer method has been invoked"
+			errorConsumedLatch.await(30, TimeUnit.SECONDS)
+
 	}
 
 }
 
 @EqualsAndHashCode
 class CustomEvent {
-    String data
+	String data
 }
 
 
@@ -121,40 +121,40 @@ class HandlerBean {
 		latch.countDown()
 	}
 
-    @Selector(value = 'customEvent.sink')
-    @ReplyTo(value = 'customEventReply.sink')
-    CustomEvent handleCustomEvent(CustomEvent customEvent) {
-        return new CustomEvent(data: customEvent.data + " from custom event.")
-    }
+	@Selector(value = 'customEvent.sink')
+	@ReplyTo(value = 'customEventReply.sink')
+	CustomEvent handleCustomEvent(CustomEvent customEvent) {
+		return new CustomEvent(data: customEvent.data + " from custom event.")
+	}
 
-    @Selector('customEventReply.sink')
-    void handleReplyToCustomEvent(Event<String> ev) {
-        println "Received response: ${ev.data}"
-        latch.countDown()
-    }
-	
+	@Selector('customEventReply.sink')
+	void handleReplyToCustomEvent(Event<String> ev) {
+		println "Received response: ${ev.data}"
+		latch.countDown()
+	}
+
 	@Selector(value = 'throws.exception')
-    @ReplyTo
+	@ReplyTo
 	String handleString(Event<String> ev) {
-		throw new CustomRuntimeException("This is an exception"); 
+		throw new CustomRuntimeException("This is an exception");
 	}
 }
 
 class EventToCustomEventConverter implements Converter<Event, CustomEvent> {
 
-    @Override
-    CustomEvent convert(Event source) {
-        return new CustomEvent(data: source.getData().toString())
-    }
+	@Override
+	CustomEvent convert(Event source) {
+		return new CustomEvent(data: source.getData().toString())
+	}
 
 }
 
 class CustomEventToEventConverter implements Converter<CustomEvent, Event> {
 
-    @Override
-    Event convert(CustomEvent source) {
-        return Event.wrap(source.data)
-    }
+	@Override
+	Event convert(CustomEvent source) {
+		return Event.wrap(source.data)
+	}
 
 }
 
@@ -181,12 +181,12 @@ class AnnotatedHandlerConfig {
 		return new HandlerBean()
 	}
 
-    @Bean
+	@Bean
 	ConversionService reactorConversionService() {
-        DefaultConversionService defaultConversionService = new DefaultConversionService()
-        defaultConversionService.addConverter(Event, CustomEvent, new EventToCustomEventConverter())
-        defaultConversionService.addConverter(CustomEvent, Event, new CustomEventToEventConverter())
-        return defaultConversionService;
-    }
+		DefaultConversionService defaultConversionService = new DefaultConversionService()
+		defaultConversionService.addConverter(Event, CustomEvent, new EventToCustomEventConverter())
+		defaultConversionService.addConverter(CustomEvent, Event, new CustomEventToEventConverter())
+		return defaultConversionService;
+	}
 
 }
