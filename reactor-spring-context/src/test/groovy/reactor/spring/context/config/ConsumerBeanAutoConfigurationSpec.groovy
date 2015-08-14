@@ -105,8 +105,10 @@ class CustomEvent {
 }
 
 
-@InheritConstructors
 class CustomRuntimeException extends RuntimeException {
+	CustomRuntimeException(String var1) {
+		super(var1)
+	}
 }
 
 @Consumer
