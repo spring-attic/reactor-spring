@@ -3,38 +3,34 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import reactor.Environment;
-import reactor.core.dispatch.AbstractLifecycleDispatcher;
-import reactor.core.dispatch.RingBufferDispatcher;
+import reactor.Timers;
+import reactor.core.processor.BaseProcessor;
+import reactor.core.processor.RingBufferProcessor;
 import reactor.core.support.Assert;
-import reactor.fn.Consumer;
 import reactor.fn.timer.Timer;
 import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 
 /**
- * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferDispatcher}
+ * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferProcessor}
  * to
  * execute tasks.
  *
  * @author Jon Brisbin
- * @since 1.1
+ * @author Stephane Maldini
+ * @since 1.1, 2.1
  */
-public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware,
-                                                                                      BeanNameAware {
+public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements BeanNameAware {
 
 	private final Logger log = LoggerFactory.getLogger(RingBufferAsyncTaskExecutor.class);
 
-	private ProducerType              producerType;
-	private WaitStrategy              waitStrategy;
-	private ApplicationEventPublisher eventPublisher;
-	private RingBufferDispatcher      dispatcher;
+	private ProducerType                      producerType;
+	private WaitStrategy                      waitStrategy;
+	private BaseProcessor<Runnable, Runnable> dispatcher;
 
-	public RingBufferAsyncTaskExecutor(Environment env) {
-		this(env.getTimer());
+	public RingBufferAsyncTaskExecutor() {
+		this(Timers.globalOrNew());
 	}
 
 	public RingBufferAsyncTaskExecutor(Timer timer) {
@@ -42,28 +38,23 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
-
-	@Override
 	public void afterPropertiesSet() throws Exception {
-		this.dispatcher = new RingBufferDispatcher(
-				getName(),
-				getBacklog(),
-				new Consumer<Throwable>() {
-					@Override
-					public void accept(Throwable throwable) {
-						if (null != eventPublisher) {
-							eventPublisher.publishEvent(new AsyncTaskExceptionEvent(throwable));
-						} else {
-							log.error(throwable.getMessage(), throwable);
-						}
-					}
-				},
-				(null != producerType ? producerType : ProducerType.MULTI),
-				(null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
-		);
+		if(producerType != null && producerType == ProducerType.SINGLE) {
+			this.dispatcher = RingBufferProcessor.create(
+			  getName(),
+			  getBacklog(),
+			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			);
+		}else{
+			this.dispatcher = RingBufferProcessor.share(
+			  getName(),
+			  getBacklog(),
+			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			);
+		}
+		if(isAutoStartup()){
+			start();
+		}
 	}
 
 	@Override
@@ -81,12 +72,13 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	public void setThreads(int threads) {
 		Assert.isTrue(threads == 1, "A RingBufferAsyncTaskExecutor is always single-threaded");
 		log.warn("RingBufferAsyncTaskExecutors are always single-threaded. Ignoring request to use " +
-				         threads +
-				         " threads.");
+		  threads +
+		  " threads.");
 	}
 
 	/**
-	 * Get the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType} this {@link reactor.jarjar.com.lmax.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType} this {@link reactor.jarjar.com.lmax
+	 * .disruptor.RingBuffer} is using.
 	 *
 	 * @return the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType}
 	 */
@@ -98,15 +90,15 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	 * Set the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType} to use when creating the internal {@link
 	 * reactor.jarjar.com.lmax.disruptor.RingBuffer}.
 	 *
-	 * @param producerType
-	 * 		the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType}
+	 * @param producerType the {@link reactor.jarjar.com.lmax.disruptor.dsl.ProducerType}
 	 */
 	public void setProducerType(ProducerType producerType) {
 		this.producerType = producerType;
 	}
 
 	/**
-	 * Get the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy} this {@link reactor.jarjar.com.lmax.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy} this {@link reactor.jarjar.com.lmax.disruptor
+	 * .RingBuffer} is using.
 	 *
 	 * @return the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}
 	 */
@@ -118,15 +110,14 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	 * Set the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy} to use when creating the internal {@link
 	 * reactor.jarjar.com.lmax.disruptor.RingBuffer}.
 	 *
-	 * @param waitStrategy
-	 * 		the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}
+	 * @param waitStrategy the {@link reactor.jarjar.com.lmax.disruptor.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;
 	}
 
 	@Override
-	protected AbstractLifecycleDispatcher getDispatcher() {
+	protected BaseProcessor<Runnable, Runnable> getProcessor() {
 		return dispatcher;
 	}
 

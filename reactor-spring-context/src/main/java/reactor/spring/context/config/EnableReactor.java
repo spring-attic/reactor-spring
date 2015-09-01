@@ -9,10 +9,12 @@ import java.lang.annotation.Target;
 
 /**
  * Helper annotation to be placed on {@link org.springframework.context.annotation.Configuration} classes to ensure
- * an {@link reactor.Environment} is created in application context as well as create the necessary beans for
+ * a {@link reactor.fn.timer.Timer} and {@link org.reactivestreams.Processor} are
+ * created in application context as well as create the necessary beans for
  * automatic wiring of annotated beans.
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -20,18 +22,19 @@ import java.lang.annotation.Target;
 public @interface EnableReactor {
 
 	/**
-	 * Name of the profile to use as the default.
+	 * The bean name of {@link reactor.fn.Supplier} that can provide an instance (or instances) of
+	 *  {@link reactor.fn.timer.Timer} to be registered in the {@link org.springframework.context.ApplicationContext}.
 	 *
-	 * @return default profile name
+	 * @return bean name of {@link reactor.fn.timer.Timer} {@link reactor.fn.Supplier}
 	 */
-	String value() default "";
+	String timerSupplier() default "";
 
 	/**
-	 * The bean name of {@link reactor.fn.Supplier} that can provide an instance (or instances) of {@link reactor
-	 * .core.Environment} to be registered in the {@link org.springframework.context.ApplicationContext}.
+	 * The bean name of {@link reactor.fn.Supplier} that can provide an instance (or instances) of
+	 *  {@link org.reactivestreams.Processor} to be registered in the {@link org.springframework.context.ApplicationContext}.
 	 *
-	 * @return bean name of {@link reactor.Environment} {@link reactor.fn.Supplier}
+	 * @return bean name of {@link org.reactivestreams.Processor} {@link reactor.fn.Supplier}
 	 */
-	String environmentSupplier() default "";
+	String processorSupplier() default "";
 
 }

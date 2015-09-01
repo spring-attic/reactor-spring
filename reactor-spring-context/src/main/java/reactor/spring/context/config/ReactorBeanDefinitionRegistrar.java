@@ -1,13 +1,16 @@
 package reactor.spring.context.config;
 
+import org.reactivestreams.Processor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
-import reactor.Environment;
-import reactor.core.config.PropertiesConfigurationReader;
+import reactor.Processors;
+import reactor.Timers;
+import reactor.core.processor.BaseProcessor;
 import reactor.fn.Supplier;
+import reactor.fn.timer.Timer;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
 import java.util.Map;
@@ -16,51 +19,84 @@ import java.util.Map;
  * {@link ImportBeanDefinitionRegistrar} implementation that configures necessary Reactor components.
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
 public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 
-	private static final String DEFAULT_ENV_NAME = "reactorEnv";
+	private static final String DEFAULT_TIMER_SUPPLIER_NAME     = "reactorTimer";
+	private static final String DEFAULT_PROCESSOR_SUPPLIER_NAME = "reactorProcessor";
+
+	private static final Supplier<Supplier<? extends Processor>> DEFAULT_PROCESSOR_SUPPLIER = new Supplier<Supplier<?
+	  extends Processor>>() {
+		@Override
+		public Supplier<? extends Processor> get() {
+			return Processors.asyncService("reactor-spring",
+			  BaseProcessor.MEDIUM_BUFFER_SIZE
+			);
+		}
+	};
+
+	private static final Supplier<Supplier<? extends Timer>> DEFAULT_TIMER_SUPPLIER = new Supplier<Supplier<?
+	  extends Timer>>() {
+		@Override
+		public Supplier<? extends Timer> get() {
+			return new Supplier<Timer>() {
+				@Override
+				public Timer get() {
+					return Timers.create();
+				}
+			};
+		}
+	};
+
+	protected <T> void registerReactorBean(BeanDefinitionRegistry registry,
+	                                       String attrValue,
+	                                       String name,
+	                                       Class<T> tClass,
+	                                       Supplier<Supplier<? extends T>> supplier) {
+
+		// Create a root Enivronment
+		if (!registry.containsBeanDefinition(name)) {
+			BeanDefinitionBuilder envBeanDef = BeanDefinitionBuilder.rootBeanDefinition(CreateOrReuseFactoryBean
+			  .class);
+			envBeanDef.addConstructorArgValue(name);
+			envBeanDef.addConstructorArgValue(tClass);
+
+			if (StringUtils.hasText(attrValue)) {
+				envBeanDef.addConstructorArgReference(attrValue);
+			} else {
+				envBeanDef.addConstructorArgValue(supplier.get());
+			}
+			registry.registerBeanDefinition(name, envBeanDef.getBeanDefinition());
+		}
+	}
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata meta, BeanDefinitionRegistry registry) {
 		Map<String, Object> attrs = meta.getAnnotationAttributes(EnableReactor.class.getName());
 
-		// Create a root Enivronment
-		if (!registry.containsBeanDefinition(DEFAULT_ENV_NAME)) {
-			BeanDefinitionBuilder envBeanDef = BeanDefinitionBuilder.rootBeanDefinition(CreateOrReuseFactoryBean.class);
-			envBeanDef.addConstructorArgValue(DEFAULT_ENV_NAME);
-			envBeanDef.addConstructorArgValue(Environment.class);
+		registerReactorBean(registry,
+		  (String) attrs.get("timerSupplier"),
+		  DEFAULT_TIMER_SUPPLIER_NAME,
+		  Timer.class,
+		  DEFAULT_TIMER_SUPPLIER
+		);
 
-			String envSupplierBean = (String) attrs.get("environmentSupplier");
-			if (StringUtils.hasText(envSupplierBean)) {
-				envBeanDef.addConstructorArgReference(envSupplierBean);
-			} else {
-				Supplier<Environment> envSupplier;
-				final String profileName = (String) attrs.get("value");
-				if (StringUtils.hasText(profileName)) {
-					envSupplier = new Supplier<Environment>() {
-						@Override
-						public Environment get() {
-							return new Environment(new PropertiesConfigurationReader(profileName));
-						}
-					};
-				} else {
-					envSupplier = new Supplier<Environment>() {
-						@Override
-						public Environment get() {
-							return Environment.initializeIfEmpty().assignErrorJournal();
-						}
-					};
-				}
-				envBeanDef.addConstructorArgValue(envSupplier);
-			}
-			registry.registerBeanDefinition(DEFAULT_ENV_NAME, envBeanDef.getBeanDefinition());
-		}
+
+		registerReactorBean(registry,
+		  (String) attrs.get("processorSupplier"),
+		  DEFAULT_PROCESSOR_SUPPLIER_NAME,
+		  Processor.class,
+		  DEFAULT_PROCESSOR_SUPPLIER
+		);
+
 
 		// Create a ConsumerBeanAutoConfiguration
 		if (!registry.containsBeanDefinition(ConsumerBeanAutoConfiguration.class.getName())) {
-			BeanDefinitionBuilder autoConfigDef = BeanDefinitionBuilder.rootBeanDefinition(ConsumerBeanAutoConfiguration.class);
-			registry.registerBeanDefinition(ConsumerBeanAutoConfiguration.class.getName(), autoConfigDef.getBeanDefinition());
+			BeanDefinitionBuilder autoConfigDef = BeanDefinitionBuilder.rootBeanDefinition
+			  (ConsumerBeanAutoConfiguration.class);
+			registry.registerBeanDefinition(ConsumerBeanAutoConfiguration.class.getName(), autoConfigDef
+			  .getBeanDefinition());
 		}
 	}
 }

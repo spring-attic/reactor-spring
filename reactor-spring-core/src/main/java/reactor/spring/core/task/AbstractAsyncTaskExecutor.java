@@ -1,13 +1,19 @@
 package reactor.spring.core.task;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
-import reactor.core.dispatch.AbstractLifecycleDispatcher;
+import reactor.Subscribers;
+import reactor.core.error.Exceptions;
+import reactor.core.processor.BaseProcessor;
 import reactor.fn.Consumer;
 import reactor.fn.Pausable;
 import reactor.fn.timer.Timer;
@@ -17,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -24,22 +31,35 @@ import java.util.concurrent.atomic.AtomicReference;
  * metadata about how they should be configured.
  *
  * @author Jon Brisbin
- * @since 1.1
+ * @author Stephane Maldini
+ * @since 1.1, 2.1
  */
-public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorService,
-                                                           AsyncListenableTaskExecutor,
-                                                           InitializingBean,
-                                                           SmartLifecycle {
+public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware,
+  ScheduledExecutorService,
+  AsyncListenableTaskExecutor,
+  InitializingBean,
+  SmartLifecycle,
+  Subscriber<Runnable> {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final Timer timer;
+
+	private final AtomicBoolean running = new AtomicBoolean(false);
 
 	private String name    = getClass().getSimpleName();
 	private int    threads = Runtime.getRuntime().availableProcessors();
 	private int    backlog = 2048;
 
+	private ApplicationEventPublisher eventPublisher;
+
 	protected AbstractAsyncTaskExecutor(Timer timer) {
 		this.timer = timer;
+	}
+
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -49,27 +69,67 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 	@Override
 	public void stop(Runnable callback) {
-		getDispatcher().awaitAndShutdown();
-		callback.run();
+		if (running.compareAndSet(true, false)) {
+			getProcessor().awaitAndShutdown();
+			callback.run();
+		}
 	}
 
 	@Override
 	public void start() {
+		if (running.compareAndSet(false, true)) {
+			for (int i = 0; i < getThreads(); i++) {
+				getProcessor().subscribe(this);
+			}
+			Subscribers.start(getProcessor());
+		}
 	}
 
 	@Override
 	public void stop() {
-		getDispatcher().shutdown();
+		if (running.compareAndSet(true, false)){
+			getProcessor().awaitAndShutdown();
+		}
 	}
 
 	@Override
 	public boolean isRunning() {
-		return getDispatcher().alive();
+		return getProcessor().alive() && running.get();
 	}
 
 	@Override
 	public int getPhase() {
 		return 0;
+	}
+
+	@Override
+	public void onSubscribe(Subscription s) {
+		s.request(Long.MAX_VALUE);
+	}
+
+	@Override
+	public void onNext(Runnable runnable) {
+		try {
+			runnable.run();
+		} catch (Throwable t) {
+			Exceptions.throwIfFatal(t);
+			onError(t);
+		}
+	}
+
+	@Override
+	public void onError(Throwable t) {
+		if (null != eventPublisher) {
+			eventPublisher.publishEvent(new AsyncTaskExceptionEvent(t));
+		} else {
+			log.error(t.getMessage(), t);
+		}
+	}
+
+	@Override
+	public void onComplete() {
+		timer.cancel();
+		log.trace(getName() + " task executor has shutdown");
 	}
 
 	/**
@@ -84,8 +144,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	/**
 	 * Set the name by which these threads are known.
 	 *
-	 * @param name
-	 * 		name of the threads for this work queue
+	 * @param name name of the threads for this work queue
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -103,8 +162,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	/**
 	 * Set the number of threads to use when creating this executor.
 	 *
-	 * @param threads
-	 * 		the number of threads to use
+	 * @param threads the number of threads to use
 	 */
 	public void setThreads(int threads) {
 		this.threads = threads;
@@ -123,6 +181,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	/**
 	 * Set the number of pre-allocated tasks to keep in memory. Correlates directly to the size of the internal {@code
 	 * RingBuffer}.
+	 *
 	 * @param backlog the backlog value
 	 */
 	public void setBacklog(int backlog) {
@@ -132,12 +191,12 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 	@Override
 	public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-		return getDispatcher().awaitAndShutdown(timeout, unit);
+		return getProcessor().awaitAndShutdown(timeout, unit);
 	}
 
 	@Override
 	public boolean isTerminated() {
-		return !getDispatcher().alive();
+		return !getProcessor().alive();
 	}
 
 	@Override
@@ -147,21 +206,23 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 	@Override
 	public List<Runnable> shutdownNow() {
-		getDispatcher().shutdown();
+		shutdown();
 		return Collections.emptyList();
 	}
 
 	@Override
 	public void shutdown() {
-		getDispatcher().shutdown();
+		if(running.compareAndSet(true, false)) {
+			getProcessor().shutdown();
+		}
 	}
 
 	@Override
 	public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
 	                       long timeout,
 	                       TimeUnit unit) throws InterruptedException,
-	                                             ExecutionException,
-	                                             TimeoutException {
+	  ExecutionException,
+	  TimeoutException {
 		List<FutureTask<T>> submittedTasks = new ArrayList<FutureTask<T>>();
 		for (Callable<T> task : tasks) {
 			FutureTask<T> ft = new FutureTask<T>(task);
@@ -178,7 +239,8 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 					break;
 				}
 			}
-			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
+			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout,
+			  unit)) {
 				break;
 			}
 		}
@@ -192,7 +254,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 	@Override
 	public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException,
-	                                                                       ExecutionException {
+	  ExecutionException {
 		try {
 			return invokeAny(tasks, Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
 		} catch (TimeoutException e) {
@@ -227,7 +289,8 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 					break;
 				}
 			}
-			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout, unit)) {
+			if (null != result || (System.currentTimeMillis() - start) > TimeUnit.MILLISECONDS.convert(timeout,
+			  unit)) {
 				break;
 			}
 		}
@@ -242,14 +305,14 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 	@Override
 	public void execute(final Runnable task, long startTimeout) {
 		timer.submit(
-				new Consumer<Long>() {
-					@Override
-					public void accept(Long now) {
-						execute(task);
-					}
-				},
-				startTimeout,
-				TimeUnit.MILLISECONDS
+		  new Consumer<Long>() {
+			  @Override
+			  public void accept(Long now) {
+				  execute(task);
+			  }
+		  },
+		  startTimeout,
+		  TimeUnit.MILLISECONDS
 		);
 	}
 
@@ -290,7 +353,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 
 	@Override
 	public void execute(Runnable task) {
-		getDispatcher().execute(task);
+		getProcessor().onNext(task);
 	}
 
 	@Override
@@ -397,7 +460,7 @@ public abstract class AbstractAsyncTaskExecutor implements ScheduledExecutorServ
 		return future;
 	}
 
-	protected abstract AbstractLifecycleDispatcher getDispatcher();
+	protected abstract BaseProcessor<Runnable, Runnable> getProcessor();
 
 	private static long convertToMillis(long l, TimeUnit timeUnit) {
 		if (timeUnit == TimeUnit.MILLISECONDS) {

@@ -24,7 +24,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 
 	private final AtomicBoolean cancelled = new AtomicBoolean();
 
-	private final Promise<V> promise = Promises.prepare();
+	private final Promise<V> promise = Promises.ready();
 
 	@Override
 	public void subscribe(Subscriber<? super V> s) {

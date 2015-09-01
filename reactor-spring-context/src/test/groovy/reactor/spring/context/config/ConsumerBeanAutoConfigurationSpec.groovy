@@ -16,7 +16,7 @@
 package reactor.spring.context.config
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.InheritConstructors
+import org.reactivestreams.Processor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.ConversionService
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.support.DefaultConversionService
-import reactor.Environment
+import reactor.Processors
 import reactor.bus.Event
 import reactor.bus.EventBus
 import reactor.spring.context.annotation.Consumer
@@ -158,12 +158,12 @@ class CustomEventToEventConverter implements Converter<CustomEvent, Event> {
 class AnnotatedHandlerConfig {
 
 	@Bean
-	Environment env() {
-		return new Environment()
+	Processor<Event<?>, Event<?>> env() {
+		Processors.async()
 	}
 
 	@Bean
-	EventBus eventBus(Environment env) {
+	EventBus eventBus(Processor<Event<?>, Event<?>> env) {
 		return EventBus.create(env)
 	}
 

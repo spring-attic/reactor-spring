@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import reactor.Environment
 import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
@@ -33,12 +32,12 @@ import java.util.concurrent.TimeUnit
 
 /**
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
 @ContextConfiguration
 class TaskExecutorsSpec extends Specification {
 
-	@Autowired
-	Environment env
+
 	@Autowired
 	WorkQueueAsyncTaskExecutor workQueue
 
@@ -89,13 +88,8 @@ class TaskExecutorsSpec extends Specification {
 	static class TestConfig {
 
 		@Bean
-		public Environment env() {
-			return new Environment();
-		}
-
-		@Bean
-		WorkQueueAsyncTaskExecutor workQueueAsyncTaskExecutor(Environment env) {
-			def ex = new WorkQueueAsyncTaskExecutor(env)
+		WorkQueueAsyncTaskExecutor workQueueAsyncTaskExecutor() {
+			def ex = new WorkQueueAsyncTaskExecutor()
 			ex.producerType = ProducerType.SINGLE
 			ex.waitStrategy = new YieldingWaitStrategy()
 			return ex

@@ -2,12 +2,10 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import reactor.Environment;
-import reactor.core.dispatch.AbstractLifecycleDispatcher;
-import reactor.core.dispatch.WorkQueueDispatcher;
-import reactor.fn.Consumer;
+import reactor.Timers;
+import reactor.core.processor.BaseProcessor;
+import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.fn.timer.Timer;
 import reactor.jarjar.com.lmax.disruptor.BlockingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.WaitStrategy;
@@ -15,22 +13,22 @@ import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 
 /**
  * Implementation of an {@link org.springframework.core.task.AsyncTaskExecutor} that is backed by a Reactor {@link
- * reactor.core.dispatch.WorkQueueDispatcher}.
+ * RingBufferWorkProcessor}.
  *
  * @author Jon Brisbin
- * @since 1.1
+ * @author Stephane Maldini
+ * @since 1.1, 2.1
  */
 public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware {
 
 	private final Logger log = LoggerFactory.getLogger(WorkQueueAsyncTaskExecutor.class);
 
-	private ProducerType              producerType;
-	private WaitStrategy              waitStrategy;
-	private ApplicationEventPublisher eventPublisher;
-	private WorkQueueDispatcher       workQueue;
+	private ProducerType                      producerType;
+	private WaitStrategy                      waitStrategy;
+	private BaseProcessor<Runnable, Runnable> workQueue;
 
-	public WorkQueueAsyncTaskExecutor(Environment env) {
-		this(env.getTimer());
+	public WorkQueueAsyncTaskExecutor() {
+		this(Timers.globalOrNew());
 	}
 
 	public WorkQueueAsyncTaskExecutor(Timer timer) {
@@ -38,29 +36,23 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
-
-	@Override
 	public void afterPropertiesSet() throws Exception {
-		this.workQueue = new WorkQueueDispatcher(
-				getName(),
-				getThreads(),
-				getBacklog(),
-				new Consumer<Throwable>() {
-					@Override
-					public void accept(Throwable throwable) {
-						if (null != eventPublisher) {
-							eventPublisher.publishEvent(new AsyncTaskExceptionEvent(throwable));
-						} else {
-							log.error(throwable.getMessage(), throwable);
-						}
-					}
-				},
-				(null != producerType ? producerType : ProducerType.MULTI),
-				(null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
-		);
+		if (producerType != null && producerType == ProducerType.SINGLE) {
+			this.workQueue = RingBufferWorkProcessor.create(
+			  getName(),
+			  getBacklog(),
+			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			);
+		} else {
+			this.workQueue = RingBufferWorkProcessor.share(
+			  getName(),
+			  getBacklog(),
+			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			);
+		}
+		if(isAutoStartup()){
+			start();
+		}
 	}
 
 	/**
@@ -104,7 +96,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	@Override
-	protected AbstractLifecycleDispatcher getDispatcher() {
+	protected BaseProcessor<Runnable, Runnable> getProcessor() {
 		return workQueue;
 	}
 

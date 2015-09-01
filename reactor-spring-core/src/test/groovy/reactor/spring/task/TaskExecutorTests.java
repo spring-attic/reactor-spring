@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.Environment;
 import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy;
 import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
@@ -109,13 +108,8 @@ public class TaskExecutorTests {
 	static class TestConfig {
 
 		@Bean
-		public Environment env() {
-			return new Environment();
-		}
-
-		@Bean
-		public WorkQueueAsyncTaskExecutor workQueue(Environment env) {
-			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor(env);
+		public WorkQueueAsyncTaskExecutor workQueue() {
+			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor();
 			ex.setBacklog(4096);
 			ex.setProducerType(ProducerType.SINGLE);
 			ex.setWaitStrategy(new YieldingWaitStrategy());
@@ -123,8 +117,8 @@ public class TaskExecutorTests {
 		}
 
 		@Bean
-		public RingBufferAsyncTaskExecutor ringBuffer(Environment env) {
-			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor(env);
+		public RingBufferAsyncTaskExecutor ringBuffer() {
+			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor();
 			ex.setProducerType(ProducerType.SINGLE);
 			ex.setWaitStrategy(new YieldingWaitStrategy());
 			return ex;

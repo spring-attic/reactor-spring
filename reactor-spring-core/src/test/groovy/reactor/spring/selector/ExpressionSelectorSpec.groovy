@@ -1,6 +1,5 @@
 package reactor.spring.selector
 
-import reactor.Environment
 import reactor.bus.Event
 import reactor.bus.EventBus
 import reactor.fn.Consumer
@@ -13,11 +12,6 @@ import static ExpressionSelector.E
  */
 class ExpressionSelectorSpec extends Specification {
 
-	Environment env
-
-	def startup() {
-		env = new Environment()
-	}
 
 	def "SpEL Expressions can be used as Selectors"() {
 

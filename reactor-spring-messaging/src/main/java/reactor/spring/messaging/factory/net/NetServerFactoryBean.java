@@ -6,10 +6,10 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.support.GenericMessage;
-import reactor.Environment;
 import reactor.core.support.Assert;
 import reactor.fn.Consumer;
 import reactor.fn.Function;
+import reactor.fn.timer.Timer;
 import reactor.io.codec.Codec;
 import reactor.io.codec.DelimitedCodec;
 import reactor.io.codec.LengthFieldCodec;
@@ -36,7 +36,7 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>>
 		implements FactoryBean<ReactorPeer<IN, OUT, CONN>>, SmartLifecycle {
 
 	private final ReentrantLock startLock = new ReentrantLock();
-	private final Environment env;
+	private final Timer env;
 
 	private final Consumer<IN> consumer = new Consumer<IN>() {
 		@Override
@@ -69,7 +69,6 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>>
 
 	private Class<? extends ReactorPeer> serverImpl;
 	private ReactorPeer<IN, OUT, CONN>   server;
-	private String                       dispatcher;
 
 	private String host              = null;
 	private int    port              = 3000;
@@ -80,21 +79,10 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>>
 	private String transport         = "tcp";
 	private MessageHandler messageHandler;
 
-	public NetServerFactoryBean(Environment env) {
+	public NetServerFactoryBean(Timer env) {
 		this.env = env;
 	}
 
-	/**
-	 * Set the name of the {@link reactor.core.Dispatcher} to use, which will be pulled from the current {@link
-	 * reactor.Environment}.
-	 *
-	 * @param dispatcher dispatcher name
-	 * @return {@literal this}
-	 */
-	public NetServerFactoryBean setDispatcher(String dispatcher) {
-		this.dispatcher = dispatcher;
-		return this;
-	}
 
 	/**
 	 * Set the phase in which this bean should start.
@@ -333,10 +321,7 @@ public class NetServerFactoryBean<IN, OUT, CONN extends ChannelStream<IN, OUT>>
 
 						@Override
 						public Spec.PeerSpec<IN, OUT, CONN, ?, ?> apply(Spec.PeerSpec<IN, OUT, CONN, ?, ?> s) {
-							if (dispatcher != null) {
-								s.dispatcher(dispatcher);
-							}
-							return s.env(env).codec(framedCodec).listen(bindAddress);
+							return s.timer(env).codec(framedCodec).listen(bindAddress);
 						}
 					};
 
