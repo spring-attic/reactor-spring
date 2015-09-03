@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import reactor.jarjar.com.lmax.disruptor.YieldingWaitStrategy
-import reactor.jarjar.com.lmax.disruptor.dsl.ProducerType
+import reactor.core.processor.rb.disruptor.YieldingWaitStrategy
+import reactor.core.processor.rb.disruptor.dsl.ProducerType
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
 import spock.lang.Ignore
 import spock.lang.Specification
