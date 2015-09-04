@@ -49,6 +49,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	private String name    = getClass().getSimpleName();
 	private int    threads = Runtime.getRuntime().availableProcessors();
 	private int    backlog = 2048;
+	private boolean shared = true;
 
 	private ApplicationEventPublisher eventPublisher;
 
@@ -166,6 +167,24 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	 */
 	public void setThreads(int threads) {
 		this.threads = threads;
+	}
+
+	/** Can this executor be called from multiple threads ?
+	 *
+	 * @return true if multithread input ready
+	 */
+	public boolean isShared() {
+		return shared;
+	}
+
+
+	/**
+	 * Tells this executor if it will be accepting tasks from multiple threads
+	 *
+	 * @param shared True if should support multithread publishing
+	 */
+	public void setShared(boolean shared) {
+		this.shared = shared;
 	}
 
 	/**

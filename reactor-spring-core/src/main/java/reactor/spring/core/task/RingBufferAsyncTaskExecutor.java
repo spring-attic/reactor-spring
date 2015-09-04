@@ -6,11 +6,10 @@ import org.springframework.beans.factory.BeanNameAware;
 import reactor.Timers;
 import reactor.core.processor.BaseProcessor;
 import reactor.core.processor.RingBufferProcessor;
-import reactor.core.support.Assert;
-import reactor.fn.timer.Timer;
 import reactor.core.processor.rb.disruptor.BlockingWaitStrategy;
 import reactor.core.processor.rb.disruptor.WaitStrategy;
-import reactor.core.processor.rb.disruptor.dsl.ProducerType;
+import reactor.core.support.Assert;
+import reactor.fn.timer.Timer;
 
 /**
  * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferProcessor}
@@ -25,7 +24,6 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 
 	private final Logger log = LoggerFactory.getLogger(RingBufferAsyncTaskExecutor.class);
 
-	private ProducerType                      producerType;
 	private WaitStrategy                      waitStrategy;
 	private BaseProcessor<Runnable, Runnable> dispatcher;
 
@@ -39,7 +37,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(producerType != null && producerType == ProducerType.SINGLE) {
+		if(!isShared()) {
 			this.dispatcher = RingBufferProcessor.create(
 			  getName(),
 			  getBacklog(),
@@ -74,26 +72,6 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 		log.warn("RingBufferAsyncTaskExecutors are always single-threaded. Ignoring request to use " +
 		  threads +
 		  " threads.");
-	}
-
-	/**
-	 * Get the {@link reactor.core.processor.rb.disruptor.dsl.ProducerType} this {@link reactor.core.processor.rb
-	 * .disruptor.RingBuffer} is using.
-	 *
-	 * @return the {@link reactor.core.processor.rb.disruptor.dsl.ProducerType}
-	 */
-	public ProducerType getProducerType() {
-		return producerType;
-	}
-
-	/**
-	 * Set the {@link reactor.core.processor.rb.disruptor.dsl.ProducerType} to use when creating the internal {@link
-	 * reactor.core.processor.rb.disruptor.RingBuffer}.
-	 *
-	 * @param producerType the {@link reactor.core.processor.rb.disruptor.dsl.ProducerType}
-	 */
-	public void setProducerType(ProducerType producerType) {
-		this.producerType = producerType;
 	}
 
 	/**
