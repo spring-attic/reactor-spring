@@ -1,13 +1,13 @@
 package reactor.spring.context;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.*;
+import reactor.core.processor.RingBufferProcessor;
 import reactor.core.support.NamedDaemonThreadFactory;
-import reactor.core.processor.rb.disruptor.*;
-import reactor.core.processor.rb.disruptor.dsl.Disruptor;
-import reactor.core.processor.rb.disruptor.dsl.ProducerType;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,71 +26,17 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private final boolean                       autoStartup;
-	private final ExecutorService               executor;
-	private final Disruptor<AppEventSlot>       disruptor;
-	private final EventTranslator<AppEventSlot> translator;
+	private final boolean                           autoStartup;
+	private final RingBufferProcessor<ApplicationEvent> processor;
 
 	private volatile boolean running = false;
 
-	private RingBuffer<AppEventSlot> ringBuffer;
 	private ApplicationContext       appCtx;
 
 	public RingBufferApplicationEventPublisher(int backlog, boolean autoStartup) {
-		this(backlog, autoStartup, ProducerType.MULTI, new BlockingWaitStrategy());
-	}
-
-	public RingBufferApplicationEventPublisher(int backlog,
-	                                           boolean autoStartup,
-	                                           ProducerType producerType,
-	                                           WaitStrategy waitStrategy) {
 		this.autoStartup = autoStartup;
 
-		this.executor = new ThreadPoolExecutor(
-				1,
-				1,
-				0,
-				TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue<Runnable>(),
-				new NamedDaemonThreadFactory("ringBufferAppEventPublisher")
-		);
-
-		this.disruptor = new Disruptor<AppEventSlot>(
-				new EventFactory<AppEventSlot>() {
-					@Override
-					public AppEventSlot newInstance() {
-						return new AppEventSlot();
-					}
-				},
-				backlog,
-				executor,
-				producerType,
-				waitStrategy
-		);
-
-		this.disruptor.handleExceptionsWith(new ExceptionHandler() {
-			@Override
-			public void handleEventException(Throwable ex, long sequence, Object event) {
-				log.error(ex.getMessage(), ex);
-			}
-
-			@Override
-			public void handleOnStartException(Throwable ex) {
-				log.error(ex.getMessage(), ex);
-			}
-
-			@Override
-			public void handleOnShutdownException(Throwable ex) {
-				log.error(ex.getMessage(), ex);
-			}
-		});
-
-		this.translator = new EventTranslator<AppEventSlot>() {
-			@Override
-			public void translateTo(AppEventSlot event, long sequence) {
-				appCtx.publishEvent(event.appEvent);
-			}
-		};
+		this.processor = RingBufferProcessor.share("ringBufferAppEventPublisher", backlog);
 
 		if(autoStartup) {
 			start();
@@ -109,8 +55,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 
 	@Override
 	public void stop(Runnable callback) {
-		executor.shutdown();
-		disruptor.shutdown();
+		processor.onComplete();
 		if(null != callback) {
 			callback.run();
 		}
@@ -122,7 +67,27 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 	@Override
 	public void start() {
 		synchronized(this) {
-			ringBuffer = disruptor.start();
+			processor.subscribe(new Subscriber<ApplicationEvent>() {
+				@Override
+				public void onSubscribe(Subscription s) {
+					s.request(Long.MAX_VALUE);
+				}
+
+				@Override
+				public void onNext(ApplicationEvent applicationEvent) {
+					appCtx.publishEvent(applicationEvent);
+				}
+
+				@Override
+				public void onError(Throwable t) {
+					log.error("", t);
+				}
+
+				@Override
+				public void onComplete() {
+					log.trace("AppEvent Publisher has shutdown");
+				}
+			});
 			running = true;
 		}
 	}
@@ -146,11 +111,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 
 	@Override
 	public void publishEvent(ApplicationEvent event) {
-		ringBuffer.publishEvent(translator);
-	}
-
-	private static class AppEventSlot {
-		ApplicationEvent appEvent;
+		processor.onNext(event);
 	}
 
 }
