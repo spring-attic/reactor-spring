@@ -10,7 +10,6 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.core.processor.rb.disruptor.YieldingWaitStrategy;
-import reactor.core.processor.rb.disruptor.dsl.ProducerType;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
 
@@ -111,7 +110,7 @@ public class TaskExecutorTests {
 		public WorkQueueAsyncTaskExecutor workQueue() {
 			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor();
 			ex.setBacklog(4096);
-			ex.setProducerType(ProducerType.SINGLE);
+			ex.setShared(false);
 			ex.setWaitStrategy(new YieldingWaitStrategy());
 			return ex;
 		}
@@ -119,7 +118,7 @@ public class TaskExecutorTests {
 		@Bean
 		public RingBufferAsyncTaskExecutor ringBuffer() {
 			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor();
-			ex.setProducerType(ProducerType.SINGLE);
+			ex.setShared(false);
 			ex.setWaitStrategy(new YieldingWaitStrategy());
 			return ex;
 		}
