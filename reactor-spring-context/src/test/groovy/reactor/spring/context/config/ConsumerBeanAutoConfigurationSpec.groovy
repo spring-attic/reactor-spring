@@ -159,7 +159,7 @@ class AnnotatedHandlerConfig {
 
 	@Bean
 	Processor<Event<?>, Event<?>> env() {
-		Processors.async()
+		Processors.topic()
 	}
 
 	@Bean
