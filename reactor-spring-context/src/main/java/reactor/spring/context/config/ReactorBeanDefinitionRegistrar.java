@@ -30,7 +30,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 	  extends Processor>>() {
 		@Override
 		public Supplier<? extends Processor> get() {
-			return Processors.asyncService("reactor-spring",
+			return Processors.asyncGroup("reactor-spring",
 			  BaseProcessor.MEDIUM_BUFFER_SIZE
 			);
 		}
