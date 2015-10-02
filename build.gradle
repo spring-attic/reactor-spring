@@ -66,7 +66,10 @@ buildscript {
 
 apply from: "$gradleScriptDir/setup.gradle"
 
-allprojects {
+subprojects { subproject ->
+	apply plugin: 'java'
+	apply plugin: 'groovy'
+	apply plugin: 'maven'
 
 	configurations {
 		jacoco
@@ -83,12 +86,6 @@ allprojects {
 		maven { url 'http://repo.spring.io/libs-milestone' }
 		mavenCentral()
 	}
-}
-
-subprojects { subproject ->
-	apply plugin: 'java'
-	apply plugin: 'groovy'
-	apply plugin: 'maven'
 
 	if (project.hasProperty('platformVersion')) {
 		apply plugin: 'spring-io'
@@ -130,11 +127,6 @@ subprojects { subproject ->
 		from sourceSets.main.allSource
 	}
 
-	task groovydocJar(type: Jar) {
-		classifier = 'groovydoc'
-		from groovydoc
-	}
-
 	task javadocJar(type: Jar) {
 		classifier = 'javadoc'
 		from javadoc
@@ -143,7 +135,6 @@ subprojects { subproject ->
 	artifacts {
 		archives sourcesJar
 		archives javadocJar
-		archives groovydocJar
 	}
 
 	// dependencies that are common across all java projects

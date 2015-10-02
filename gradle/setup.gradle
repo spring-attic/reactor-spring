@@ -41,6 +41,7 @@ configure(subprojects) { subproject ->
 	}
 }
 
+
 def customizePom(def pom, def gradleProject) {
 	pom.whenConfigured { generatedPom ->
 		// eliminate test-scoped dependencies (no need in maven central poms)
