@@ -209,20 +209,6 @@ project('reactor-spring-messaging') {
 	}
 }
 
-project('reactor-spring-webmvc') {
-	description = 'Reactor Spring MVC Components'
-	dependencies {
-		// Reactor Spring
-		compile project(':reactor-spring-context')
-		compile "io.projectreactor:reactor-stream:$reactorVersion"
-
-		provided 'javax.servlet:javax.servlet-api:3.1.0'
-
-		// Spring MVC
-		compile "org.springframework:spring-webmvc:$springVersion"
-	}
-}
-
 configure(rootProject) {
 	description = "Reactor Spring"
 

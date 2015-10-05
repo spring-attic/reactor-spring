@@ -2,5 +2,4 @@ rootProject.name = 'reactor-spring'
 
 include 'reactor-spring-core',
 		'reactor-spring-context',
-		'reactor-spring-messaging',
-		'reactor-spring-webmvc'
+		'reactor-spring-messaging'
