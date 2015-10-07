@@ -6,8 +6,8 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import reactor.Timers;
 import reactor.core.processor.BaseProcessor;
 import reactor.core.processor.RingBufferWorkProcessor;
-import reactor.core.processor.rb.disruptor.BlockingWaitStrategy;
-import reactor.core.processor.rb.disruptor.WaitStrategy;
+import reactor.core.support.wait.BlockingWaitStrategy;
+import reactor.core.support.wait.WaitStrategy;
 import reactor.fn.timer.Timer;
 
 /**
@@ -48,26 +48,26 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
 			);
 		}
-		if(isAutoStartup()){
+		if (isAutoStartup()) {
 			start();
 		}
 	}
 
 	/**
-	 * Get the {@link reactor.core.processor.rb.disruptor.WaitStrategy} this {@link reactor.core.processor.rb.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.core.support.wait.WaitStrategy} this {@link reactor.core.processor.rb.disruptor.RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.processor.rb.disruptor.WaitStrategy}
+	 * @return the {@link reactor.core.support.wait.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.processor.rb.disruptor.WaitStrategy} to use when creating the internal {@link
+	 * Set the {@link reactor.core.support.wait.WaitStrategy} to use when creating the internal {@link
 	 * reactor.core.processor.rb.disruptor.RingBuffer}.
 	 *
 	 * @param waitStrategy
-	 * 		the {@link reactor.core.processor.rb.disruptor.WaitStrategy}
+	 * 		the {@link reactor.core.support.wait.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;

@@ -6,9 +6,9 @@ import org.springframework.beans.factory.BeanNameAware;
 import reactor.Timers;
 import reactor.core.processor.BaseProcessor;
 import reactor.core.processor.RingBufferProcessor;
-import reactor.core.processor.rb.disruptor.BlockingWaitStrategy;
-import reactor.core.processor.rb.disruptor.WaitStrategy;
 import reactor.core.support.Assert;
+import reactor.core.support.wait.BlockingWaitStrategy;
+import reactor.core.support.wait.WaitStrategy;
 import reactor.fn.timer.Timer;
 
 /**
@@ -37,20 +37,20 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(!isShared()) {
+		if (!isShared()) {
 			this.dispatcher = RingBufferProcessor.create(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
 			);
-		}else{
+		} else {
 			this.dispatcher = RingBufferProcessor.share(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
 			);
 		}
-		if(isAutoStartup()){
+		if (isAutoStartup()) {
 			start();
 		}
 	}
@@ -75,20 +75,20 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	/**
-	 * Get the {@link reactor.core.processor.rb.disruptor.WaitStrategy} this {@link reactor.core.processor.rb.disruptor
+	 * Get the {@link reactor.core.support.wait.WaitStrategy} this {@link reactor.core.processor.rb.disruptor
 	 * .RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.processor.rb.disruptor.WaitStrategy}
+	 * @return the {@link reactor.core.support.wait.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.processor.rb.disruptor.WaitStrategy} to use when creating the internal {@link
+	 * Set the {@link reactor.core.support.wait.WaitStrategy} to use when creating the internal {@link
 	 * reactor.core.processor.rb.disruptor.RingBuffer}.
 	 *
-	 * @param waitStrategy the {@link reactor.core.processor.rb.disruptor.WaitStrategy}
+	 * @param waitStrategy the {@link reactor.core.support.wait.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;
