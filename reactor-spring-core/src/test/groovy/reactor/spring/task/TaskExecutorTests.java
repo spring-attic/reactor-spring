@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.core.processor.rb.disruptor.YieldingWaitStrategy;
+import reactor.core.support.wait.YieldingWaitStrategy;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
 
