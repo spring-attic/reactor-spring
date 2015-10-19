@@ -1,9 +1,32 @@
 package reactor.spring.core.task;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.Subscribers;
+import reactor.core.error.Exceptions;
+import reactor.core.processor.ExecutorProcessor;
+import reactor.fn.Consumer;
+import reactor.fn.Pausable;
+import reactor.fn.timer.Timer;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -11,20 +34,6 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
-import reactor.Subscribers;
-import reactor.core.error.Exceptions;
-import reactor.core.processor.BaseProcessor;
-import reactor.fn.Consumer;
-import reactor.fn.Pausable;
-import reactor.fn.timer.Timer;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Abstract base class for {@link org.springframework.core.task.AsyncTaskExecutor} implementations that need some basic
@@ -479,7 +488,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		return future;
 	}
 
-	protected abstract BaseProcessor<Runnable, Runnable> getProcessor();
+	protected abstract ExecutorProcessor<Runnable, Runnable> getProcessor();
 
 	private static long convertToMillis(long l, TimeUnit timeUnit) {
 		if (timeUnit == TimeUnit.MILLISECONDS) {

@@ -2,13 +2,14 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisherAware;
 import reactor.Timers;
-import reactor.core.processor.BaseProcessor;
+import reactor.core.processor.ExecutorProcessor;
 import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.core.support.wait.BlockingWaitStrategy;
 import reactor.core.support.wait.WaitStrategy;
 import reactor.fn.timer.Timer;
+
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Implementation of an {@link org.springframework.core.task.AsyncTaskExecutor} that is backed by a Reactor {@link
@@ -23,7 +24,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private final Logger log = LoggerFactory.getLogger(WorkQueueAsyncTaskExecutor.class);
 
 	private WaitStrategy                      waitStrategy;
-	private BaseProcessor<Runnable, Runnable> workQueue;
+	private ExecutorProcessor<Runnable, Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
 		this(Timers.globalOrNew());
@@ -74,7 +75,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	@Override
-	protected BaseProcessor<Runnable, Runnable> getProcessor() {
+	protected ExecutorProcessor<Runnable, Runnable> getProcessor() {
 		return workQueue;
 	}
 

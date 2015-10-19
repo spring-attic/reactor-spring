@@ -2,14 +2,15 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanNameAware;
 import reactor.Timers;
-import reactor.core.processor.BaseProcessor;
+import reactor.core.processor.ExecutorProcessor;
 import reactor.core.processor.RingBufferProcessor;
 import reactor.core.support.Assert;
 import reactor.core.support.wait.BlockingWaitStrategy;
 import reactor.core.support.wait.WaitStrategy;
 import reactor.fn.timer.Timer;
+
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferProcessor}
@@ -25,7 +26,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	private final Logger log = LoggerFactory.getLogger(RingBufferAsyncTaskExecutor.class);
 
 	private WaitStrategy                      waitStrategy;
-	private BaseProcessor<Runnable, Runnable> dispatcher;
+	private ExecutorProcessor<Runnable, Runnable> dispatcher;
 
 	public RingBufferAsyncTaskExecutor() {
 		this(Timers.globalOrNew());
@@ -95,7 +96,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	@Override
-	protected BaseProcessor<Runnable, Runnable> getProcessor() {
+	protected ExecutorProcessor<Runnable, Runnable> getProcessor() {
 		return dispatcher;
 	}
 
