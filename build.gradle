@@ -196,8 +196,7 @@ project('reactor-spring-messaging') {
 	description = 'Reactor Spring Messaging Components'
 	dependencies {
 		// Reactor Spring
-		compile project(':reactor-spring-context'),
-				"io.projectreactor:reactor-net:$reactorVersion"
+		compile project(':reactor-spring-context')
 
 		// Spring Messaging
 		compile("org.springframework:spring-messaging:$springVersion") {
