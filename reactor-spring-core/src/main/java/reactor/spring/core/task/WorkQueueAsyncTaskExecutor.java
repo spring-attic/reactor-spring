@@ -55,7 +55,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	/**
-	 * Get the {@link reactor.core.support.wait.WaitStrategy} this {@link reactor.core.processor.rb.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.core.support.wait.WaitStrategy} this {@link reactor.core.support.rb.disruptor.RingBuffer} is using.
 	 *
 	 * @return the {@link reactor.core.support.wait.WaitStrategy}
 	 */
@@ -65,7 +65,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 
 	/**
 	 * Set the {@link reactor.core.support.wait.WaitStrategy} to use when creating the internal {@link
-	 * reactor.core.processor.rb.disruptor.RingBuffer}.
+	 * reactor.core.support.rb.disruptor.RingBuffer}.
 	 *
 	 * @param waitStrategy
 	 * 		the {@link reactor.core.support.wait.WaitStrategy}

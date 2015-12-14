@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of {@link org.springframework.context.ApplicationEventPublisher} that uses a {@link
- * reactor.core.processor.rb.disruptor.RingBuffer} to dispatch events.
+ * reactor.core.support.rb.disruptor.RingBuffer} to dispatch events.
  *
  * @author Jon Brisbin
  */
