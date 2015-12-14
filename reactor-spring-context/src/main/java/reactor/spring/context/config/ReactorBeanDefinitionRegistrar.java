@@ -10,7 +10,7 @@ import reactor.Processors;
 import reactor.Timers;
 import reactor.core.processor.BaseProcessor;
 import reactor.fn.Supplier;
-import reactor.fn.timer.Timer;
+import reactor.core.timer.Timer;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
 import java.util.Map;

@@ -8,7 +8,7 @@ import reactor.core.processor.RingBufferProcessor;
 import reactor.core.support.Assert;
 import reactor.core.support.wait.BlockingWaitStrategy;
 import reactor.core.support.wait.WaitStrategy;
-import reactor.fn.timer.Timer;
+import reactor.core.timer.Timer;
 
 import org.springframework.beans.factory.BeanNameAware;
 

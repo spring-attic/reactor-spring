@@ -7,7 +7,7 @@ import reactor.core.processor.ExecutorProcessor;
 import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.core.support.wait.BlockingWaitStrategy;
 import reactor.core.support.wait.WaitStrategy;
-import reactor.fn.timer.Timer;
+import reactor.core.timer.Timer;
 
 import org.springframework.context.ApplicationEventPublisherAware;
 

@@ -25,7 +25,7 @@ import reactor.core.error.Exceptions;
 import reactor.core.processor.ExecutorProcessor;
 import reactor.fn.Consumer;
 import reactor.fn.Pausable;
-import reactor.fn.timer.Timer;
+import reactor.core.timer.Timer;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
