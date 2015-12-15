@@ -24,7 +24,7 @@ import reactor.Subscribers;
 import reactor.core.error.Exceptions;
 import reactor.core.processor.ExecutorProcessor;
 import reactor.fn.Consumer;
-import reactor.fn.Pausable;
+import reactor.core.support.ReactiveState.Pausable;
 import reactor.core.timer.Timer;
 
 import org.springframework.beans.factory.InitializingBean;
