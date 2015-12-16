@@ -17,10 +17,13 @@ package reactor.spring.context.config
 
 import groovy.transform.EqualsAndHashCode
 import org.reactivestreams.Processor
+import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.core.convert.ConversionService
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.support.DefaultConversionService
@@ -97,6 +100,24 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 
 	}
 
+	def "Proxy to Annotated Consumer is wired"() {
+
+		given:
+		"an ApplicationContext with an annotated bean handler"
+		ApplicationContext ctx = new AnnotationConfigApplicationContext(AnnotatedHandlerConfig)
+		ConsumerBeanAutoConfiguration configuration = new ConsumerBeanAutoConfiguration(
+				applicationContext: ctx
+		)
+
+		when:
+		"reads beans for context"
+		configuration.onApplicationEvent(new ContextRefreshedEvent(ctx))
+
+		then:
+		"proxied bean has been wired"
+		configuration.wiredBeans["handlerBeanAop"] == true
+	}
+
 }
 
 @EqualsAndHashCode
@@ -135,6 +156,20 @@ class HandlerBean {
 		throw new CustomRuntimeException('This is an exception');
 	}
 }
+
+interface HandlerProxiedBean {}
+
+@Consumer
+class HandlerProxiedBeanImpl implements HandlerProxiedBean {
+	def latch = new CountDownLatch(1)
+
+	@Selector(value = 'proxiedBean.sink', eventBus = "@eventBus")
+	void handleTest(Event<String> ev) {
+		println "a=${ev.headers['a']}, b=${ev.headers['b']}"
+		latch.countDown()
+	}
+}
+
 
 class EventToCustomEventConverter implements Converter<Event, CustomEvent> {
 
@@ -183,6 +218,15 @@ class AnnotatedHandlerConfig {
 		defaultConversionService.addConverter(Event, CustomEvent, new EventToCustomEventConverter())
 		defaultConversionService.addConverter(CustomEvent, Event, new CustomEventToEventConverter())
 		return defaultConversionService;
+	}
+
+	@Bean
+	Object handlerBeanAop() {
+		return new ProxyFactoryBean(
+				proxyInterfaces: [HandlerProxiedBean],
+				target: new HandlerProxiedBeanImpl(),
+				interceptorNames: []
+		)
 	}
 
 }

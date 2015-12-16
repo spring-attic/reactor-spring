@@ -2,6 +2,7 @@ package reactor.spring.context.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -111,6 +112,9 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 			Set<Method> methods = new HashSet<Method>();
 			Class<?> type = ctx.getType(beanName);
 			if(type == null) continue;
+			if (Proxy.isProxyClass(type)) {
+				type = AopProxyUtils.ultimateTargetClass(ctx.getBean(beanName));
+			}
 
 			if (null == AnnotationUtils.findAnnotation(type, reactor.spring.context.annotation.Consumer.class)) {
 				wiredBeans.put(beanName, Boolean.FALSE);
