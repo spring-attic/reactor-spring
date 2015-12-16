@@ -100,7 +100,7 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 
 	}
 
-	def "Proxy to Annotated Consumer is wired"() {
+	def "Proxy to Annotated Consumer is wired and accepts events"() {
 
 		given:
 		"an ApplicationContext with an annotated bean handler"
@@ -108,6 +108,8 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 		ConsumerBeanAutoConfiguration configuration = new ConsumerBeanAutoConfiguration(
 				applicationContext: ctx
 		)
+		def reactor = ctx.getBean(EventBus)
+		def bean = ctx.getBean(HandlerProxiedBean)
 
 		when:
 		"reads beans for context"
@@ -116,6 +118,13 @@ class ConsumerBeanAutoConfigurationSpec extends Specification {
 		then:
 		"proxied bean has been wired"
 		configuration.wiredBeans["handlerBeanAop"] == true
+
+		when:
+		"an event is emitted"
+		reactor.notify("proxiedBean.sink", Event.wrap("Hello"))
+
+		then:
+		bean.targetSource.target.latch.await(10, TimeUnit.SECONDS)
 	}
 
 }

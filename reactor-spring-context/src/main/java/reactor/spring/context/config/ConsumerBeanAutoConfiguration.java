@@ -2,7 +2,9 @@ package reactor.spring.context.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -330,6 +332,13 @@ public class ConsumerBeanAutoConfiguration implements ApplicationListener<Contex
 
 		@Override
 		public Object apply(Event ev) {
+			Object bean = this.bean;
+			if (AopUtils.isJdkDynamicProxy(bean)) {
+				try {
+					bean = ((Advised)bean).getTargetSource().getTarget();
+				} catch (Exception ignored) { }
+			}
+
 			if (argTypes.length == 0) {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Invoking method[" + method + "] on " + bean.getClass() + " using " + ev);
