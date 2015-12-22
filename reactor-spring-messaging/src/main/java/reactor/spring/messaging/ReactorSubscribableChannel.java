@@ -10,7 +10,7 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.processor.RingBufferProcessor;
 import reactor.fn.Consumer;
 import reactor.rx.Streams;
-import reactor.rx.action.Control;
+import reactor.rx.subscriber.Control;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
