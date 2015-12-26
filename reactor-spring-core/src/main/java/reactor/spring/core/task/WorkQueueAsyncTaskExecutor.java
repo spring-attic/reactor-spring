@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import reactor.Timers;
 import reactor.core.processor.ExecutorProcessor;
 import reactor.core.processor.RingBufferWorkProcessor;
-import reactor.core.support.wait.BlockingWaitStrategy;
-import reactor.core.support.wait.WaitStrategy;
+import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
 
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -40,13 +39,13 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 			this.workQueue = RingBufferWorkProcessor.create(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
 			);
 		} else {
 			this.workQueue = RingBufferWorkProcessor.share(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new BlockingWaitStrategy())
+			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
 			);
 		}
 		if (isAutoStartup()) {
@@ -55,20 +54,20 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	/**
-	 * Get the {@link reactor.core.support.wait.WaitStrategy} this {@link reactor.core.support.rb.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.core.support.WaitStrategy} this {@link reactor.core.support.rb.disruptor.RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.support.wait.WaitStrategy}
+	 * @return the {@link reactor.core.support.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.support.wait.WaitStrategy} to use when creating the internal {@link
+	 * Set the {@link reactor.core.support.WaitStrategy} to use when creating the internal {@link
 	 * reactor.core.support.rb.disruptor.RingBuffer}.
 	 *
 	 * @param waitStrategy
-	 * 		the {@link reactor.core.support.wait.WaitStrategy}
+	 * 		the {@link reactor.core.support.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;
