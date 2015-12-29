@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import reactor.core.support.wait.YieldingWaitStrategy
+import reactor.core.support.WaitStrategy
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -90,7 +90,7 @@ class TaskExecutorsSpec extends Specification {
 		WorkQueueAsyncTaskExecutor workQueueAsyncTaskExecutor() {
 			def ex = new WorkQueueAsyncTaskExecutor()
 			ex.shared = false
-			ex.waitStrategy = new YieldingWaitStrategy()
+			ex.waitStrategy = new WaitStrategy.Yielding()
 			return ex
 		}
 

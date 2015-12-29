@@ -1,20 +1,21 @@
 package reactor.spring.task;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import reactor.core.support.WaitStrategy;
+import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
+import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.core.support.wait.YieldingWaitStrategy;
-import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
-import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Jon Brisbin
@@ -111,7 +112,7 @@ public class TaskExecutorTests {
 			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor();
 			ex.setBacklog(4096);
 			ex.setShared(false);
-			ex.setWaitStrategy(new YieldingWaitStrategy());
+			ex.setWaitStrategy(new WaitStrategy.Yielding());
 			return ex;
 		}
 
@@ -119,7 +120,7 @@ public class TaskExecutorTests {
 		public RingBufferAsyncTaskExecutor ringBuffer() {
 			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor();
 			ex.setShared(false);
-			ex.setWaitStrategy(new YieldingWaitStrategy());
+			ex.setWaitStrategy(new WaitStrategy.Yielding());
 			return ex;
 		}
 
