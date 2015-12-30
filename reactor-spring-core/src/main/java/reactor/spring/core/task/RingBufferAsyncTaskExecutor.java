@@ -18,7 +18,7 @@ import org.springframework.beans.factory.BeanNameAware;
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
- * @since 1.1, 2.1
+ * @since 1.1, 2.5
  */
 public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements BeanNameAware {
 

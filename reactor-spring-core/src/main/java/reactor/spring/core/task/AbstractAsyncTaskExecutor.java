@@ -41,7 +41,7 @@ import org.springframework.util.concurrent.ListenableFutureTask;
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
- * @since 1.1, 2.1
+ * @since 1.1, 2.5
  */
 public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware,
   ScheduledExecutorService,

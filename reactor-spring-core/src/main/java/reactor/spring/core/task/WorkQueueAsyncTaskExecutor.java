@@ -16,7 +16,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
- * @since 1.1, 2.1
+ * @since 1.1, 2.5
  */
 public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implements ApplicationEventPublisherAware {
 
