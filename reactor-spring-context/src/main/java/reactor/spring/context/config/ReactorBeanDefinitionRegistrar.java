@@ -8,7 +8,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
 import reactor.Processors;
 import reactor.Timers;
-import reactor.core.processor.BaseProcessor;
+import reactor.core.support.ReactiveState;
 import reactor.fn.Supplier;
 import reactor.core.timer.Timer;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
@@ -31,7 +31,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 		@Override
 		public Supplier<? extends Processor> get() {
 			return Processors.asyncGroup("reactor-spring",
-			  BaseProcessor.MEDIUM_BUFFER_SIZE
+			  ReactiveState.MEDIUM_BUFFER_SIZE
 			);
 		}
 	};

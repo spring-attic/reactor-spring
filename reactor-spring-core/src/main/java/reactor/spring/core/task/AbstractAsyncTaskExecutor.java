@@ -91,7 +91,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 			for (int i = 0; i < getThreads(); i++) {
 				getProcessor().subscribe(this);
 			}
-			Subscribers.start(getProcessor());
+			getProcessor().start();
 		}
 	}
 

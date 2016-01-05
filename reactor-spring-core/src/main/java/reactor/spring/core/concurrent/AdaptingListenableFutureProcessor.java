@@ -1,20 +1,20 @@
 package reactor.spring.core.concurrent;
 
-import org.reactivestreams.Processor;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-import org.springframework.util.concurrent.FailureCallback;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.springframework.util.concurrent.SuccessCallback;
-import reactor.fn.Consumer;
-import reactor.rx.Promise;
-import reactor.rx.Promises;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.reactivestreams.Processor;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import reactor.fn.Consumer;
+import reactor.rx.Promise;
+
+import org.springframework.util.concurrent.FailureCallback;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.springframework.util.concurrent.SuccessCallback;
 
 /**
  * Adapt a Reactor {@link reactor.rx.Promise} to a Spring {@link org.springframework.util.concurrent.ListenableFuture}
@@ -24,7 +24,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 
 	private final AtomicBoolean cancelled = new AtomicBoolean();
 
-	private final Promise<V> promise = Promises.ready();
+	private final Promise<V> promise = Promise.ready();
 
 	@Override
 	public void subscribe(Subscriber<? super V> s) {
