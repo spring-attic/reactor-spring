@@ -60,7 +60,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 	public void addCallback(final SuccessCallback<? super V> successCallback,
 	                        final FailureCallback failureCallback) {
 		promise
-				.onSuccess(new Consumer<V>() {
+				.doOnSuccess(new Consumer<V>() {
 					@Override
 					public void accept(V val) {
 						if (null != successCallback) {
@@ -68,7 +68,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 						}
 					}
 				})
-				.onError(new Consumer<Throwable>() {
+				.doOnError(new Consumer<Throwable>() {
 					@Override
 					public void accept(Throwable throwable) {
 						if (null != failureCallback) {
@@ -95,7 +95,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 
 	@Override
 	public boolean isDone() {
-		return promise.isComplete();
+		return promise.isTerminated();
 	}
 
 	@Override
