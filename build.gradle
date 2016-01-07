@@ -76,6 +76,7 @@ subprojects { subproject ->
 	}
 
 	configurations.all {
+	  	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 		exclude group: "commons-logging"
 	}
 
