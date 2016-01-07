@@ -71,7 +71,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 				handler.handleMessage(ev);
 			}
 		};
-		Control c = Streams.wrap(processor).consume(consumer);
+		Control c = Streams.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
