@@ -75,7 +75,8 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 							failureCallback.onFailure(throwable);
 						}
 					}
-				});
+				})
+				.subscribe();
 	}
 
 	@Override
