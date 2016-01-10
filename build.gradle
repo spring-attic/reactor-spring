@@ -76,13 +76,13 @@ subprojects { subproject ->
 	}
 
 	configurations.all {
-	  	//resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+	  	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 		exclude group: "commons-logging"
 	}
 
 	group = 'io.projectreactor.spring'
 	repositories {
-		mavenLocal()
+		//mavenLocal()
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 		maven { url 'http://repo.spring.io/libs-milestone' }
 		mavenCentral()
