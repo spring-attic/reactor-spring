@@ -1,19 +1,20 @@
 package reactor.spring.messaging;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.reactivestreams.Processor;
+import reactor.core.processor.RingBufferProcessor;
+import reactor.fn.Consumer;
+import reactor.rx.Stream;
+import reactor.rx.subscriber.Control;
+
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.util.ObjectUtils;
-import reactor.core.processor.RingBufferProcessor;
-import reactor.fn.Consumer;
-import reactor.rx.Streams;
-import reactor.rx.subscriber.Control;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
@@ -71,7 +72,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 				handler.handleMessage(ev);
 			}
 		};
-		Control c = Streams.from(processor).consume(consumer);
+		Control c = Stream.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
