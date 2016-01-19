@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import reactor.core.error.ReactorFatalException;
+import reactor.core.error.Exceptions.UpstreamException;
 import reactor.fn.Consumer;
 import reactor.rx.Promise;
 
@@ -47,7 +47,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 		try{
 			promise.onError(t);
 		}
-		catch (ReactorFatalException x){
+		catch (Exceptions.UpstreamException x){
 			if(x.getCause() instanceof RuntimeException){
 				throw (RuntimeException)x.getCause();
 			}
