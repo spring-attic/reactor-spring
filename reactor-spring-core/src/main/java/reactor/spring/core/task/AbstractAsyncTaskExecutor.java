@@ -20,7 +20,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.processor.ExecutorProcessor;
+import reactor.core.publisher.ExecutorProcessor;
 import reactor.core.support.Exceptions;
 import reactor.core.support.ReactiveState.Pausable;
 import reactor.core.timer.Timer;

@@ -3,8 +3,8 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.Timers;
-import reactor.core.processor.ExecutorProcessor;
-import reactor.core.processor.RingBufferProcessor;
+import reactor.core.publisher.ExecutorProcessor;
+import reactor.core.publisher.TopicProcessor;
 import reactor.core.support.Assert;
 import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
@@ -12,7 +12,7 @@ import reactor.core.timer.Timer;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link RingBufferProcessor}
+ * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link TopicProcessor}
  * to
  * execute tasks.
  *
@@ -38,13 +38,13 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!isShared()) {
-			this.dispatcher = RingBufferProcessor.create(
+			this.dispatcher = TopicProcessor.create(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
 			);
 		} else {
-			this.dispatcher = RingBufferProcessor.share(
+			this.dispatcher = TopicProcessor.share(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())

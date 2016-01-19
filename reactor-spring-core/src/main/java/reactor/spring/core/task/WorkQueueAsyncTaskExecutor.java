@@ -3,8 +3,8 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.Timers;
-import reactor.core.processor.ExecutorProcessor;
-import reactor.core.processor.RingBufferWorkProcessor;
+import reactor.core.publisher.ExecutorProcessor;
+import reactor.core.publisher.WorkQueueProcessor;
 import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
 
@@ -12,7 +12,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Implementation of an {@link org.springframework.core.task.AsyncTaskExecutor} that is backed by a Reactor {@link
- * RingBufferWorkProcessor}.
+ * WorkQueueProcessor}.
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
@@ -36,13 +36,13 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!isShared()) {
-			this.workQueue = RingBufferWorkProcessor.create(
+			this.workQueue = WorkQueueProcessor.create(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
 			);
 		} else {
-			this.workQueue = RingBufferWorkProcessor.share(
+			this.workQueue = WorkQueueProcessor.share(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())

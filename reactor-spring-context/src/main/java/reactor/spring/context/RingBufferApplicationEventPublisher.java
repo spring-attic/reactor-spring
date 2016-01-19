@@ -4,15 +4,14 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.*;
-import reactor.core.processor.RingBufferProcessor;
-import reactor.core.support.NamedDaemonThreadFactory;
+import reactor.core.publisher.TopicProcessor;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.SmartLifecycle;
 
 /**
  * Implementation of {@link org.springframework.context.ApplicationEventPublisher} that uses a {@link
@@ -27,7 +26,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final boolean                           autoStartup;
-	private final RingBufferProcessor<ApplicationEvent> processor;
+	private final TopicProcessor<ApplicationEvent> processor;
 
 	private volatile boolean running = false;
 
@@ -36,7 +35,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 	public RingBufferApplicationEventPublisher(int backlog, boolean autoStartup) {
 		this.autoStartup = autoStartup;
 
-		this.processor = RingBufferProcessor.share("ringBufferAppEventPublisher", backlog);
+		this.processor = TopicProcessor.share("ringBufferAppEventPublisher", backlog);
 
 		if(autoStartup) {
 			start();
