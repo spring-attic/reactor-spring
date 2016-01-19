@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.reactivestreams.Processor;
-import reactor.core.publisher.TopicProcessor;
+import reactor.core.publisher.ProcessorTopic;
 import reactor.fn.Consumer;
 import reactor.rx.Stream;
 import reactor.rx.subscriber.Control;
@@ -18,7 +18,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Subscribable {@link org.springframework.messaging.MessageChannel} implementation that uses the RinBuffer-based
- * Reactor {@link reactor.core.publisher.TopicProcessor} to publish messages for efficiency at high volumes.
+ * Reactor {@link reactor.core.publisher.ProcessorTopic} to publish messages for efficiency at high volumes.
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
@@ -49,9 +49,9 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	public ReactorSubscribableChannel(boolean singleThreadedProducer) {
 		this.beanName = String.format("%s@%s", getClass().getSimpleName(), ObjectUtils.getIdentityHexString(this));
 		if (singleThreadedProducer) {
-			this.processor = TopicProcessor.create();
+			this.processor = ProcessorTopic.create();
 		} else {
-			this.processor = TopicProcessor.share();
+			this.processor = ProcessorTopic.share();
 		}
 	}
 
