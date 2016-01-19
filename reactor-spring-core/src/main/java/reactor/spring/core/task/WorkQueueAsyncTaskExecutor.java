@@ -2,11 +2,11 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.Timers;
 import reactor.core.publisher.ProcessorExecutor;
 import reactor.core.publisher.WorkQueueProcessor;
 import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
+import reactor.core.timer.Timers;
 
 import org.springframework.context.ApplicationEventPublisherAware;
 

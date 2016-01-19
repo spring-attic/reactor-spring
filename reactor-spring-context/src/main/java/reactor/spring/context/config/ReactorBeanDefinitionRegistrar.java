@@ -1,19 +1,20 @@
 package reactor.spring.context.config;
 
+import java.util.Map;
+
 import org.reactivestreams.Processor;
+import reactor.core.publisher.Processors;
+import reactor.core.support.ReactiveState;
+import reactor.core.timer.Timer;
+import reactor.core.timer.Timers;
+import reactor.fn.Supplier;
+import reactor.spring.factory.CreateOrReuseFactoryBean;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
-import reactor.Processors;
-import reactor.Timers;
-import reactor.core.support.ReactiveState;
-import reactor.fn.Supplier;
-import reactor.core.timer.Timer;
-import reactor.spring.factory.CreateOrReuseFactoryBean;
-
-import java.util.Map;
 
 /**
  * {@link ImportBeanDefinitionRegistrar} implementation that configures necessary Reactor components.

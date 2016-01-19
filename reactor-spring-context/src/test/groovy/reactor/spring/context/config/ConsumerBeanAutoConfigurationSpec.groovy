@@ -24,9 +24,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.ConversionService
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.support.DefaultConversionService
-import reactor.Processors
 import reactor.bus.Event
 import reactor.bus.EventBus
+import reactor.core.publisher.Processors
 import reactor.spring.context.annotation.Consumer
 import reactor.spring.context.annotation.ReplyTo
 import reactor.spring.context.annotation.Selector
