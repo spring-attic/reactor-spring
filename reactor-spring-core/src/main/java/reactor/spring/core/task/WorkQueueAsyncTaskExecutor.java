@@ -2,7 +2,6 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.ProcessorExecutor;
 import reactor.core.publisher.WorkQueueProcessor;
 import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
@@ -23,7 +22,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private final Logger log = LoggerFactory.getLogger(WorkQueueAsyncTaskExecutor.class);
 
 	private WaitStrategy                      waitStrategy;
-	private ProcessorExecutor<Runnable, Runnable> workQueue;
+	private WorkQueueProcessor<Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
 		this(Timers.globalOrNew());
@@ -74,7 +73,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	@Override
-	protected ProcessorExecutor<Runnable, Runnable> getProcessor() {
+	protected WorkQueueProcessor<Runnable> getProcessor() {
 		return workQueue;
 	}
 
