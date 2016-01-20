@@ -3,9 +3,9 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorWorkQueue;
-import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
 import reactor.core.timer.Timers;
+import reactor.core.util.WaitStrategy;
 
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -53,20 +53,20 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	/**
-	 * Get the {@link reactor.core.support.WaitStrategy} this {@link reactor.core.queue.disruptor.RingBuffer} is using.
+	 * Get the {@link reactor.core.util.WaitStrategy} this {@link reactor.core.queue.RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.support.WaitStrategy}
+	 * @return the {@link reactor.core.util.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.support.WaitStrategy} to use when creating the internal {@link
-	 * reactor.core.queue.disruptor.RingBuffer}.
+	 * Set the {@link reactor.core.util.WaitStrategy} to use when creating the internal {@link
+	 * reactor.core.queue.RingBuffer}.
 	 *
 	 * @param waitStrategy
-	 * 		the {@link reactor.core.support.WaitStrategy}
+	 * 		the {@link reactor.core.util.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;

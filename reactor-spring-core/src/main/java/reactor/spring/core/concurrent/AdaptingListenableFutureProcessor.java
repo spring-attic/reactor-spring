@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import reactor.core.support.Exceptions;
+import reactor.core.util.Exceptions;
 import reactor.fn.Consumer;
 import reactor.rx.Promise;
 

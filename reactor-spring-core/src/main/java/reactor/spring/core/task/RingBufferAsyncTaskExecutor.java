@@ -3,10 +3,10 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorTopic;
-import reactor.core.support.Assert;
-import reactor.core.support.WaitStrategy;
 import reactor.core.timer.Timer;
 import reactor.core.timer.Timers;
+import reactor.core.util.Assert;
+import reactor.core.util.WaitStrategy;
 
 import org.springframework.beans.factory.BeanNameAware;
 
@@ -74,20 +74,20 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	/**
-	 * Get the {@link reactor.core.support.WaitStrategy} this {@link reactor.core.queue.disruptor
+	 * Get the {@link reactor.core.util.WaitStrategy} this {@link reactor.core.queue
 	 * .RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.support.WaitStrategy}
+	 * @return the {@link reactor.core.util.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.support.WaitStrategy} to use when creating the internal {@link
-	 * reactor.core.queue.disruptor.RingBuffer}.
+	 * Set the {@link reactor.core.util.WaitStrategy} to use when creating the internal {@link
+	 * reactor.core.queue.RingBuffer}.
 	 *
-	 * @param waitStrategy the {@link reactor.core.support.WaitStrategy}
+	 * @param waitStrategy the {@link reactor.core.util.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;

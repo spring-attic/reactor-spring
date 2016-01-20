@@ -15,7 +15,7 @@ import org.springframework.context.SmartLifecycle;
 
 /**
  * Implementation of {@link org.springframework.context.ApplicationEventPublisher} that uses a {@link
- * reactor.core.queue.disruptor.RingBuffer} to dispatch events.
+ * reactor.core.queue.RingBuffer} to dispatch events.
  *
  * @author Jon Brisbin
  */

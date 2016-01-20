@@ -21,9 +21,9 @@ import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorExecutor;
-import reactor.core.support.Exceptions;
-import reactor.core.support.ReactiveState.Pausable;
 import reactor.core.timer.Timer;
+import reactor.core.util.Exceptions;
+import reactor.core.util.ReactiveState.Pausable;
 import reactor.fn.Consumer;
 
 import org.springframework.beans.factory.InitializingBean;

@@ -1,9 +1,15 @@
 package reactor.spring.factory;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
-import reactor.core.support.Assert;
+import reactor.core.util.Assert;
 import reactor.fn.Supplier;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ListableBeanFactory;
 
 /**
  * Spring {@link org.springframework.beans.factory.FactoryBean} implementation to provide either a new bean, created on
