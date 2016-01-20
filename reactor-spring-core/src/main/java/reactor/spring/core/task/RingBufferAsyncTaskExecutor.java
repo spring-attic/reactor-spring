@@ -74,7 +74,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	/**
-	 * Get the {@link reactor.core.support.WaitStrategy} this {@link reactor.core.support.rb.disruptor
+	 * Get the {@link reactor.core.support.WaitStrategy} this {@link reactor.core.queue.disruptor
 	 * .RingBuffer} is using.
 	 *
 	 * @return the {@link reactor.core.support.WaitStrategy}
@@ -85,7 +85,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 
 	/**
 	 * Set the {@link reactor.core.support.WaitStrategy} to use when creating the internal {@link
-	 * reactor.core.support.rb.disruptor.RingBuffer}.
+	 * reactor.core.queue.disruptor.RingBuffer}.
 	 *
 	 * @param waitStrategy the {@link reactor.core.support.WaitStrategy}
 	 */
