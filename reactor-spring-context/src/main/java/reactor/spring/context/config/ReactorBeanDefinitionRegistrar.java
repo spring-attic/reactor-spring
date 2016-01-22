@@ -6,7 +6,6 @@ import org.reactivestreams.Processor;
 import reactor.core.publisher.Processors;
 import reactor.core.timer.Timer;
 import reactor.core.timer.Timers;
-import reactor.core.util.ReactiveState;
 import reactor.fn.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
@@ -32,7 +31,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 		@Override
 		public Supplier<? extends Processor> get() {
 			return Processors.asyncGroup("reactor-spring",
-			  ReactiveState.MEDIUM_BUFFER_SIZE
+			  PlatformDependent.MEDIUM_BUFFER_SIZE
 			);
 		}
 	};

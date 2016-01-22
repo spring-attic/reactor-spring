@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorExecutor;
 import reactor.core.timer.Timer;
+import reactor.core.trait.Pausable;
 import reactor.core.util.Exceptions;
-import reactor.core.util.ReactiveState.Pausable;
 import reactor.fn.Consumer;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -33,6 +33,8 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
+
+.Pausable;
 
 /**
  * Abstract base class for {@link org.springframework.core.task.AsyncTaskExecutor} implementations that need some basic
