@@ -34,8 +34,6 @@ import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureTask;
 
-.Pausable;
-
 /**
  * Abstract base class for {@link org.springframework.core.task.AsyncTaskExecutor} implementations that need some basic
  * metadata about how they should be configured.
