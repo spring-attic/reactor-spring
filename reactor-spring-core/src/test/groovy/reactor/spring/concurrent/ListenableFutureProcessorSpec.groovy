@@ -2,7 +2,7 @@ package reactor.spring.concurrent
 
 import org.springframework.util.concurrent.FailureCallback
 import org.springframework.util.concurrent.SuccessCallback
-import reactor.rx.broadcast.Broadcaster
+import reactor.rx.Broadcaster
 import reactor.spring.core.concurrent.AdaptingListenableFutureProcessor
 import reactor.spring.core.concurrent.ListenableFutureProcessor
 import spock.lang.Specification
