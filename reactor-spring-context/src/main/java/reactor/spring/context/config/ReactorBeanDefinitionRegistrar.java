@@ -3,7 +3,6 @@ package reactor.spring.context.config;
 import java.util.Map;
 
 import org.reactivestreams.Processor;
-import reactor.core.publisher.Processors;
 import reactor.core.timer.Timer;
 import reactor.core.util.PlatformDependent;
 import reactor.fn.Supplier;
@@ -30,7 +29,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 	  extends Processor>>() {
 		@Override
 		public Supplier<? extends Processor> get() {
-			return Processors.asyncGroup("reactor-spring",
+			return ProcessorGroup.async("reactor-spring",
 			  PlatformDependent.MEDIUM_BUFFER_SIZE
 			);
 		}
