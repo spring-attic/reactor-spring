@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorTopic;
 import reactor.core.timer.Timer;
-import reactor.core.timer.Timers;
 import reactor.core.util.Assert;
 import reactor.core.util.WaitStrategy;
 
@@ -27,7 +26,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	private ProcessorTopic<Runnable> dispatcher;
 
 	public RingBufferAsyncTaskExecutor() {
-		this(Timers.globalOrNew());
+		this(Timer.globalOrNew());
 	}
 
 	public RingBufferAsyncTaskExecutor(Timer timer) {

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.ProcessorWorkQueue;
 import reactor.core.timer.Timer;
-import reactor.core.timer.Timers;
 import reactor.core.util.WaitStrategy;
 
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -25,7 +24,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private ProcessorWorkQueue<Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
-		this(Timers.globalOrNew());
+		this(Timer.globalOrNew());
 	}
 
 	public WorkQueueAsyncTaskExecutor(Timer timer) {
