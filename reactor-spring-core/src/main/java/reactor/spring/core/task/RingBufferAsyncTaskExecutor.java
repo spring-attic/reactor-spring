@@ -39,13 +39,13 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 			this.dispatcher = ProcessorTopic.create(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
+			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		} else {
 			this.dispatcher = ProcessorTopic.share(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
+			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		}
 		if (isAutoStartup()) {

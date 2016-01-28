@@ -37,13 +37,13 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 			this.workQueue = ProcessorWorkQueue.create(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
+			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		} else {
 			this.workQueue = ProcessorWorkQueue.share(
 			  getName(),
 			  getBacklog(),
-			  (null != waitStrategy ? waitStrategy : new WaitStrategy.Blocking())
+			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		}
 		if (isAutoStartup()) {

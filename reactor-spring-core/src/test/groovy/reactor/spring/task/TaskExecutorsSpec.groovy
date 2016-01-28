@@ -90,7 +90,7 @@ class TaskExecutorsSpec extends Specification {
 		WorkQueueAsyncTaskExecutor workQueueAsyncTaskExecutor() {
 			def ex = new WorkQueueAsyncTaskExecutor()
 			ex.shared = false
-			ex.waitStrategy = new WaitStrategy.Yielding()
+			ex.waitStrategy = WaitStrategy.yielding()
 			return ex
 		}
 

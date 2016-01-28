@@ -112,7 +112,7 @@ public class TaskExecutorTests {
 			WorkQueueAsyncTaskExecutor ex = new WorkQueueAsyncTaskExecutor();
 			ex.setBacklog(4096);
 			ex.setShared(false);
-			ex.setWaitStrategy(new WaitStrategy.Yielding());
+			ex.setWaitStrategy(WaitStrategy.yielding());
 			return ex;
 		}
 
@@ -120,7 +120,7 @@ public class TaskExecutorTests {
 		public RingBufferAsyncTaskExecutor ringBuffer() {
 			RingBufferAsyncTaskExecutor ex = new RingBufferAsyncTaskExecutor();
 			ex.setShared(false);
-			ex.setWaitStrategy(new WaitStrategy.Yielding());
+			ex.setWaitStrategy(WaitStrategy.yielding());
 			return ex;
 		}
 
