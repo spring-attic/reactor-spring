@@ -4,7 +4,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.ProcessorTopic;
+import reactor.core.publisher.TopicProcessor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +26,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final boolean                           autoStartup;
-	private final ProcessorTopic<ApplicationEvent> processor;
+	private final TopicProcessor<ApplicationEvent> processor;
 
 	private volatile boolean running = false;
 
@@ -35,7 +35,7 @@ public class RingBufferApplicationEventPublisher implements ApplicationEventPubl
 	public RingBufferApplicationEventPublisher(int backlog, boolean autoStartup) {
 		this.autoStartup = autoStartup;
 
-		this.processor = ProcessorTopic.share("ringBufferAppEventPublisher", backlog);
+		this.processor = TopicProcessor.share("ringBufferAppEventPublisher", backlog);
 
 		if(autoStartup) {
 			start();

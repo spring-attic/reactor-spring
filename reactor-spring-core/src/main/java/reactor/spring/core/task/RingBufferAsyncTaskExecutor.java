@@ -2,7 +2,7 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.ProcessorTopic;
+import reactor.core.publisher.TopicProcessor;
 import reactor.core.timer.Timer;
 import reactor.core.util.Assert;
 import reactor.core.util.WaitStrategy;
@@ -10,7 +10,7 @@ import reactor.core.util.WaitStrategy;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link ProcessorTopic}
+ * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link TopicProcessor}
  * to
  * execute tasks.
  *
@@ -23,7 +23,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	private final Logger log = LoggerFactory.getLogger(RingBufferAsyncTaskExecutor.class);
 
 	private WaitStrategy                          waitStrategy;
-	private ProcessorTopic<Runnable> dispatcher;
+	private TopicProcessor<Runnable> dispatcher;
 
 	public RingBufferAsyncTaskExecutor() {
 		this(Timer.globalOrNew());
@@ -36,13 +36,13 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!isShared()) {
-			this.dispatcher = ProcessorTopic.create(
+			this.dispatcher = TopicProcessor.create(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		} else {
-			this.dispatcher = ProcessorTopic.share(
+			this.dispatcher = TopicProcessor.share(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
@@ -93,7 +93,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	@Override
-	protected ProcessorTopic<Runnable> getProcessor() {
+	protected TopicProcessor<Runnable> getProcessor() {
 		return dispatcher;
 	}
 

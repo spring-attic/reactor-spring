@@ -2,7 +2,7 @@ package reactor.spring.core.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.ProcessorWorkQueue;
+import reactor.core.publisher.WorkQueueProcessor;
 import reactor.core.timer.Timer;
 import reactor.core.util.WaitStrategy;
 
@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Implementation of an {@link org.springframework.core.task.AsyncTaskExecutor} that is backed by a Reactor {@link
- * ProcessorWorkQueue}.
+ * WorkQueueProcessor}.
  *
  * @author Jon Brisbin
  * @author Stephane Maldini
@@ -21,7 +21,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private final Logger log = LoggerFactory.getLogger(WorkQueueAsyncTaskExecutor.class);
 
 	private WaitStrategy                      waitStrategy;
-	private ProcessorWorkQueue<Runnable> workQueue;
+	private WorkQueueProcessor<Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
 		this(Timer.globalOrNew());
@@ -34,13 +34,13 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if (!isShared()) {
-			this.workQueue = ProcessorWorkQueue.create(
+			this.workQueue = WorkQueueProcessor.create(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
 			);
 		} else {
-			this.workQueue = ProcessorWorkQueue.share(
+			this.workQueue = WorkQueueProcessor.share(
 			  getName(),
 			  getBacklog(),
 			  (null != waitStrategy ? waitStrategy : WaitStrategy.blocking())
@@ -72,7 +72,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	}
 
 	@Override
-	protected ProcessorWorkQueue<Runnable> getProcessor() {
+	protected WorkQueueProcessor<Runnable> getProcessor() {
 		return workQueue;
 	}
 

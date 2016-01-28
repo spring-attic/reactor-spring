@@ -35,7 +35,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.ProcessorExecutor;
+import reactor.core.publisher.ExecutorProcessor;
 import reactor.core.state.Pausable;
 import reactor.core.timer.Timer;
 import reactor.core.util.Exceptions;
@@ -502,7 +502,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		return future;
 	}
 
-	protected abstract ProcessorExecutor<Runnable, Runnable> getProcessor();
+	protected abstract ExecutorProcessor<Runnable, Runnable> getProcessor();
 
 	private static long convertToMillis(long l, TimeUnit timeUnit) {
 		if (timeUnit == TimeUnit.MILLISECONDS) {
