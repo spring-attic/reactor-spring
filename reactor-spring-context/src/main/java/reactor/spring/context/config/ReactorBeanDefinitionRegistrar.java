@@ -3,6 +3,7 @@ package reactor.spring.context.config;
 import java.util.Map;
 
 import org.reactivestreams.Processor;
+import reactor.core.publisher.ProcessorGroup;
 import reactor.core.timer.Timer;
 import reactor.core.util.PlatformDependent;
 import reactor.fn.Supplier;
