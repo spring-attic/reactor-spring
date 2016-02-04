@@ -2,6 +2,8 @@ package reactor.spring.context.config;
 
 import java.util.Map;
 
+import org.reactivestreams.Processor;
+import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.SchedulerGroup;
 import reactor.core.timer.Timer;
 import reactor.core.util.PlatformDependent;
@@ -23,25 +25,42 @@ import org.springframework.util.StringUtils;
 public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 
 	private static final String DEFAULT_TIMER_SUPPLIER_NAME  = "reactorTimer";
-	private static final String DEFAULT_SCHEDULER_GROUP_NAME = "reactorSchedulerGroup";
+	private static final String DEFAULT_SCHEDULER_GROUP_NAME = "reactorGroupedProcessors";
 
-	private static final Supplier<SchedulerGroup> DEFAULT_SCHEDULER_GROUP = new Supplier<SchedulerGroup>() {
+	private static final Supplier<Supplier<Processor>> DEFAULT_SCHEDULER_GROUP = new
+			Supplier<Supplier<Processor>>() {
 		@Override
-		public SchedulerGroup get() {
-			return SchedulerGroup.async(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent.MEDIUM_BUFFER_SIZE);
+		public Supplier<Processor> get() {
+			final SchedulerGroup group =
+					SchedulerGroup.async(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent
+							.MEDIUM_BUFFER_SIZE);
+
+			return new Supplier<Processor>() {
+				@Override
+				public Processor get() {
+					return FluxProcessor.async(group);
+				}
+			};
+
 		}
 	};
 
-	private static final Supplier<Timer> DEFAULT_TIMER_SUPPLIER = new Supplier<Timer>() {
+	private static final Supplier<Supplier<Timer>> DEFAULT_TIMER_SUPPLIER =  new Supplier<Supplier<Timer>>() {
+		@Override
+		public Supplier<Timer> get() {
+			final Timer timer = Timer.create();
+			return new Supplier<Timer>() {
 				@Override
 				public Timer get() {
-					return Timer.create();
+					return timer;
 				}
+			};
+		}
 	};
 
 	protected <T> void registerReactorBean(BeanDefinitionRegistry registry,
 	                                       String attrValue,
-	                                       String name, Class<T> tClass, Supplier<? extends T> supplier) {
+	                                       String name, Class<T> tClass, Supplier<Supplier<T>> supplier) {
 
 		// Create a root Enivronment
 		if (!registry.containsBeanDefinition(name)) {
@@ -74,7 +93,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 		registerReactorBean(registry,
 				(String) attrs.get("processorSupplier"),
 				DEFAULT_SCHEDULER_GROUP_NAME,
-				SchedulerGroup.class,
+				Processor.class,
 				DEFAULT_SCHEDULER_GROUP
 		);
 
