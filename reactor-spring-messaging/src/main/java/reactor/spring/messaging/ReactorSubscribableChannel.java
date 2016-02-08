@@ -7,7 +7,7 @@ import org.reactivestreams.Processor;
 import reactor.core.publisher.TopicProcessor;
 import reactor.fn.Consumer;
 import reactor.rx.Stream;
-import reactor.rx.subscriber.Control;
+import reactor.rx.subscriber.InterruptableSubscriber;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.messaging.Message;
@@ -25,9 +25,9 @@ import org.springframework.util.ObjectUtils;
  */
 public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel, SubscribableChannel {
 
-	private final Map<MessageHandler, Control>
+	private final Map<MessageHandler, InterruptableSubscriber<?>>
 			messageHandlerConsumers =
-			new ConcurrentHashMap<MessageHandler, Control>();
+			new ConcurrentHashMap<MessageHandler, InterruptableSubscriber<?>>();
 
 	private final Processor<Message<?>, Message<?>> processor;
 
@@ -72,7 +72,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 				handler.handleMessage(ev);
 			}
 		};
-		Control c = Stream.from(processor).consume(consumer);
+		InterruptableSubscriber<?> c = Stream.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
@@ -81,7 +81,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean unsubscribe(MessageHandler handler) {
-		Control control = messageHandlerConsumers.remove(handler);
+		InterruptableSubscriber<?> control = messageHandlerConsumers.remove(handler);
 		if (null == control) {
 			return false;
 		}
