@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.reactivestreams.Processor;
 import reactor.core.publisher.TopicProcessor;
 import reactor.fn.Consumer;
-import reactor.rx.Stream;
+import reactor.rx.Fluxion;
 import reactor.rx.subscriber.InterruptableSubscriber;
 
 import org.springframework.beans.factory.BeanNameAware;
@@ -72,7 +72,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 				handler.handleMessage(ev);
 			}
 		};
-		InterruptableSubscriber<?> c = Stream.from(processor).consume(consumer);
+		InterruptableSubscriber<?> c = Fluxion.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
