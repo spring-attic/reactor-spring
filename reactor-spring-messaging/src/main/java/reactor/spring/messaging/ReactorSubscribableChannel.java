@@ -2,10 +2,10 @@ package reactor.spring.messaging;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import org.reactivestreams.Processor;
 import reactor.core.publisher.TopicProcessor;
-import reactor.fn.Consumer;
 import reactor.rx.Fluxion;
 import reactor.rx.subscriber.InterruptableSubscriber;
 

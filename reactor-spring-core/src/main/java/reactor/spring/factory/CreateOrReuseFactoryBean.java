@@ -1,7 +1,8 @@
 package reactor.spring.factory;
 
+import java.util.function.Supplier;
+
 import reactor.core.util.Assert;
-import reactor.fn.Supplier;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -15,7 +16,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * Spring {@link org.springframework.beans.factory.FactoryBean} implementation to provide either a new bean, created on
  * the first injection, or the previously-created bean thereafter.
  * <p>This is slightly different than letting the Spring container handle this behaviour as the instance will come from
- * the given {@link reactor.fn.Supplier} the first time around.</p>
+ * the given {@link java.util.function.Supplier} the first time around.</p>
  *
  * @author Jon Brisbin
  */

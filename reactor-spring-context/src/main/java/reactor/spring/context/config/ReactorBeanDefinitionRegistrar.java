@@ -1,13 +1,13 @@
 package reactor.spring.context.config;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.reactivestreams.Processor;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.SchedulerGroup;
 import reactor.core.timer.Timer;
 import reactor.core.util.PlatformDependent;
-import reactor.fn.Supplier;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;

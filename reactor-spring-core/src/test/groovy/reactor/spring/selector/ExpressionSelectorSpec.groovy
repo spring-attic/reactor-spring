@@ -2,8 +2,9 @@ package reactor.spring.selector
 
 import reactor.bus.Event
 import reactor.bus.EventBus
-import reactor.fn.Consumer
 import spock.lang.Specification
+
+import java.util.function.Consumer
 
 import static ExpressionSelector.E
 

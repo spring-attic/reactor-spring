@@ -15,7 +15,11 @@
  */
 package reactor.spring.context.annotation;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Placed on a method to denote that it is an event handler.
@@ -33,7 +37,7 @@ public @interface Selector {
      * this handler with the {@link
 	 * reactor.bus.EventBus}.
 	 * If empty, consumer will be subscribed on the global reactor selector
-	 * {@link reactor.bus.EventBus#on(reactor.bus.selector.Selector selector, reactor.fn.Consumer)}
+	 * {@link reactor.bus.EventBus#on(reactor.bus.selector.Selector selector, java.util.function.Consumer)}
 	 *
 	 * @return An expression to be evaluated.
 	 */
