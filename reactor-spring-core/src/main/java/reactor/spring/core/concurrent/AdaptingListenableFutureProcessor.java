@@ -115,7 +115,7 @@ public abstract class AdaptingListenableFutureProcessor<T, V> implements Listena
 
 	@Override
 	public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-		return promise.await(timeout, unit);
+		return promise.await(TimeUnit.MILLISECONDS.convert(timeout, unit));
 	}
 
 	protected abstract V adapt(T val);
