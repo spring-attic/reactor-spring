@@ -353,8 +353,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 				  execute(task);
 			  }
 		  },
-		  startTimeout,
-		  TimeUnit.MILLISECONDS
+		  startTimeout
 		);
 	}
 
@@ -409,7 +408,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 			public void accept(Long now) {
 				execute(future);
 			}
-		}, initialDelay, TimeUnit.MILLISECONDS);
+		}, initialDelay);
 		return future;
 	}
 
@@ -424,7 +423,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 			public void accept(Long now) {
 				execute(future);
 			}
-		}, initialDelay, TimeUnit.MILLISECONDS);
+		}, initialDelay);
 		return future;
 	}
 
@@ -460,7 +459,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		};
 
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(task, null, initialDelay);
-		registration.set(timer.schedule(consumer, periodInMs, TimeUnit.MILLISECONDS, initialDelayInMs));
+		registration.set(timer.schedule(consumer, periodInMs, initialDelayInMs));
 		return future;
 	}
 
@@ -485,7 +484,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 					public void run() {
 						try {
 							future.run();
-							timer.submit(self, delayInMs, TimeUnit.MILLISECONDS);
+							timer.submit(self, delayInMs);
 						} catch (Throwable t) {
 							log.error(t.getMessage(), t);
 							Pausable reg;
@@ -498,7 +497,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 			}
 		};
 
-		registration.set(timer.submit(consumer, initialDelayInMs, TimeUnit.MILLISECONDS));
+		registration.set(timer.submit(consumer, initialDelayInMs));
 		return future;
 	}
 
