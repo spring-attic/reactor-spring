@@ -5,9 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.reactivestreams.Processor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.TopicProcessor;
-import reactor.rx.Fluxion;
-import reactor.rx.subscriber.InterruptableSubscriber;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.messaging.Message;
@@ -25,9 +24,9 @@ import org.springframework.util.ObjectUtils;
  */
 public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel, SubscribableChannel {
 
-	private final Map<MessageHandler, InterruptableSubscriber<?>>
+	private final Map<MessageHandler, Runnable>
 			messageHandlerConsumers =
-			new ConcurrentHashMap<MessageHandler, InterruptableSubscriber<?>>();
+			new ConcurrentHashMap<MessageHandler, Runnable>();
 
 	private final Processor<Message<?>, Message<?>> processor;
 
@@ -66,13 +65,8 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 
 	@Override
 	public boolean subscribe(final MessageHandler handler) {
-		Consumer<Message<?>> consumer = new Consumer<Message<?>>() {
-			@Override
-			public void accept(Message<?> ev) {
-				handler.handleMessage(ev);
-			}
-		};
-		InterruptableSubscriber<?> c = Fluxion.from(processor).consume(consumer);
+		Consumer<Message<?>> consumer = handler::handleMessage;
+		Runnable c = Flux.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
@@ -81,11 +75,11 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean unsubscribe(MessageHandler handler) {
-		InterruptableSubscriber<?> control = messageHandlerConsumers.remove(handler);
+		Runnable control = messageHandlerConsumers.remove(handler);
 		if (null == control) {
 			return false;
 		}
-		control.cancel();
+		control.run();
 		return true;
 	}
 
