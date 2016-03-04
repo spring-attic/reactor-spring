@@ -2,7 +2,7 @@ package reactor.spring.concurrent
 
 import org.springframework.util.concurrent.FailureCallback
 import org.springframework.util.concurrent.SuccessCallback
-import reactor.rx.Broadcaster
+import reactor.core.publisher.EmitterProcessor
 import reactor.spring.core.concurrent.AdaptingListenableFutureProcessor
 import reactor.spring.core.concurrent.ListenableFutureProcessor
 import spock.lang.Specification
@@ -18,7 +18,7 @@ class ListenableFutureProcessorSpec extends Specification {
       def val = ""
       def f = new ListenableFutureProcessor()
       f.addCallback({ v -> val = v } as SuccessCallback, null)
-      def b = Broadcaster.create()
+      def b = EmitterProcessor.create().connect()
       b.subscribe(f)
 
     when: 'a value is pushed downstream'
@@ -34,7 +34,7 @@ class ListenableFutureProcessorSpec extends Specification {
     given:
       def val = ""
       def f = new ListenableFutureProcessor()
-      def b = Broadcaster.create()
+      def b = EmitterProcessor.create().connect()
       b.consume {
         val = it
       }
@@ -59,7 +59,7 @@ class ListenableFutureProcessorSpec extends Specification {
         }
       }
       f.addCallback({ v -> val = v } as SuccessCallback, null)
-      def b = Broadcaster.<String> create()
+      def b = EmitterProcessor.<String>create().connect()
       b.subscribe(f)
 
     when: 'a value is pushed downstream'
@@ -76,7 +76,7 @@ class ListenableFutureProcessorSpec extends Specification {
       def error = null
       def f = new ListenableFutureProcessor()
       f.addCallback(null, { t -> error = t } as FailureCallback)
-      def b = Broadcaster.create()
+      def b = EmitterProcessor.create().connect()
       b.subscribe(f)
 
     when: 'a value is pushed downstream'
