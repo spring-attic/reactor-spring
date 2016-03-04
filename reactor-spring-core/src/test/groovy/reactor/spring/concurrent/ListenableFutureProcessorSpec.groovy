@@ -34,7 +34,7 @@ class ListenableFutureProcessorSpec extends Specification {
     given:
       def val = ""
       def f = new ListenableFutureProcessor()
-      def b = EmitterProcessor.create().connect()
+      def b = EmitterProcessor.create()
       b.consume {
         val = it
       }
