@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.TopicProcessor;
 import reactor.core.timer.Timer;
-import reactor.core.util.Assert;
 import reactor.core.util.WaitStrategy;
 
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.util.Assert;
 
 /**
  * Implementation of {@link org.springframework.core.task.AsyncTaskExecutor} that uses a {@link TopicProcessor}
