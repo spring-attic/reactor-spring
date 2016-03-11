@@ -200,7 +200,7 @@ project('reactor-spring-messaging') {
 
 		// Spring Messaging
 		compile("org.springframework:spring-messaging:$springVersion") {
-			exclude group: "io.projectreactor.spring", module: "reactor-net"
+			exclude group: "io.projectreactor.spring", module: "reactor-netty"
 		}
 
 		testCompile "com.esotericsoftware.kryo:kryo:$kryoVersion",
