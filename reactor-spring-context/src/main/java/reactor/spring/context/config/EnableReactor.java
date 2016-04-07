@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * Helper annotation to be placed on {@link org.springframework.context.annotation.Configuration} classes to ensure
- * a {@link reactor.core.timer.Timer} and {@link org.reactivestreams.Processor} are
+ * a {@link reactor.core.scheduler.Timer} and {@link org.reactivestreams.Processor} are
  * created in application context as well as create the necessary beans for
  * automatic wiring of annotated beans.
  *
@@ -23,9 +23,9 @@ public @interface EnableReactor {
 
 	/**
 	 * The bean name of {@link java.util.function.Supplier} that can provide an instance (or instances) of
-	 *  {@link reactor.core.timer.Timer} to be registered in the {@link org.springframework.context.ApplicationContext}.
+	 *  {@link reactor.core.scheduler.Timer} to be registered in the {@link org.springframework.context.ApplicationContext}.
 	 *
-	 * @return bean name of {@link reactor.core.timer.Timer} {@link java.util.function.Supplier}
+	 * @return bean name of {@link reactor.core.scheduler.Timer} {@link java.util.function.Supplier}
 	 */
 	String timerSupplier() default "";
 

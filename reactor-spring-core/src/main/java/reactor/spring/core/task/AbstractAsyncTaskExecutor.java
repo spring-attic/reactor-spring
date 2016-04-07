@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.EventLoopProcessor;
 import reactor.core.state.Pausable;
-import reactor.core.timer.Timer;
+import reactor.core.scheduler.Timer;
 import reactor.core.util.Exceptions;
 
 import org.springframework.beans.factory.InitializingBean;

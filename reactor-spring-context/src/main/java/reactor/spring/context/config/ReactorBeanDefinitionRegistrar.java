@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import org.reactivestreams.Processor;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.publisher.SchedulerGroup;
-import reactor.core.timer.Timer;
+import reactor.core.scheduler.Timer;
 import reactor.core.util.PlatformDependent;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
