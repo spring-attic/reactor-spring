@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.reactivestreams.Processor;
-import reactor.core.publisher.FluxProcessor;
+import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.SchedulerGroup;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.PlatformDependent;
