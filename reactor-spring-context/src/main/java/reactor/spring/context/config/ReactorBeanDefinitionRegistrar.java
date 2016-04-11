@@ -38,7 +38,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 			return new Supplier<Processor>() {
 				@Override
 				public Processor get() {
-					return FluxProcessor.async(group);
+					return EmitterProcessor.async(group);
 				}
 			};
 
