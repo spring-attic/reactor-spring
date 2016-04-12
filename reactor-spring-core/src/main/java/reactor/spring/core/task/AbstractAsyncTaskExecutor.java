@@ -37,7 +37,6 @@ import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.EventLoopProcessor;
-import reactor.core.state.Pausable;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.Exceptions;
 
@@ -434,7 +433,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	                                              TimeUnit unit) {
 		long initialDelayInMs = convertToMillis(initialDelay, unit);
 		long periodInMs = convertToMillis(period, unit);
-		final AtomicReference<Pausable> registration = new AtomicReference<Pausable>();
+		final AtomicReference<Runnable> registration = new AtomicReference<>();
 
 		final Runnable task = new Runnable() {
 			@Override
@@ -443,9 +442,9 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 					command.run();
 				} catch (Throwable t) {
 					log.error(t.getMessage(), t);
-					Pausable reg;
+					Runnable reg;
 					if (null != (reg = registration.get())) {
-						reg.cancel();
+						reg.run();
 					}
 				}
 			}
@@ -472,7 +471,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		final long delayInMs = convertToMillis(initialDelay, unit);
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(command, null, initialDelayInMs);
 
-		final AtomicReference<Pausable> registration = new AtomicReference<Pausable>();
+		final AtomicReference<Runnable> registration = new AtomicReference<>();
 
 		final Consumer<Long> consumer = new Consumer<Long>() {
 			final Consumer<Long> self = this;
@@ -487,9 +486,9 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 							timer.submit(self, delayInMs);
 						} catch (Throwable t) {
 							log.error(t.getMessage(), t);
-							Pausable reg;
+							Runnable reg;
 							if (null != (reg = registration.get())) {
-								reg.cancel();
+								reg.run();
 							}
 						}
 					}
