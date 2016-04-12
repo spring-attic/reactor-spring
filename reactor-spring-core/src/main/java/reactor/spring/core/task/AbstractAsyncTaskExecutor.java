@@ -36,6 +36,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.flow.Cancellation;
 import reactor.core.publisher.EventLoopProcessor;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.Exceptions;
@@ -151,7 +152,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 
 	@Override
 	public void onComplete() {
-		timer.cancel();
+		timer.shutdown();
 		log.trace(getName() + " task executor has shutdown");
 	}
 
@@ -345,14 +346,9 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 
 	@Override
 	public void execute(final Runnable task, long startTimeout) {
-		timer.submit(
-		  new Consumer<Long>() {
-			  @Override
-			  public void accept(Long now) {
-				  execute(task);
-			  }
-		  },
-		  startTimeout
+		timer.schedule(
+		  () -> execute(task),
+		  startTimeout, TimeUnit.MILLISECONDS
 		);
 	}
 
@@ -402,12 +398,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	                                   TimeUnit unit) {
 		long initialDelay = convertToMillis(delay, unit);
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(command, null, initialDelay);
-		timer.submit(new Consumer<Long>() {
-			@Override
-			public void accept(Long now) {
-				execute(future);
-			}
-		}, initialDelay);
+		timer.schedule( () -> execute(future), initialDelay, TimeUnit.MILLISECONDS);
 		return future;
 	}
 
@@ -417,12 +408,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	                                       TimeUnit unit) {
 		long initialDelay = convertToMillis(delay, unit);
 		final ScheduledFutureTask<V> future = new ScheduledFutureTask<V>(callable, initialDelay);
-		timer.submit(new Consumer<Long>() {
-			@Override
-			public void accept(Long now) {
-				execute(future);
-			}
-		}, initialDelay);
+		timer.schedule( () -> execute(future), initialDelay, TimeUnit.MILLISECONDS);
 		return future;
 	}
 
@@ -433,32 +419,24 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	                                              TimeUnit unit) {
 		long initialDelayInMs = convertToMillis(initialDelay, unit);
 		long periodInMs = convertToMillis(period, unit);
-		final AtomicReference<Runnable> registration = new AtomicReference<>();
+		final AtomicReference<Cancellation> registration = new AtomicReference<>();
 
-		final Runnable task = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					command.run();
-				} catch (Throwable t) {
-					log.error(t.getMessage(), t);
-					Runnable reg;
-					if (null != (reg = registration.get())) {
-						reg.run();
-					}
+		final Runnable task = () -> {
+			try {
+				command.run();
+			} catch (Throwable t) {
+				log.error(t.getMessage(), t);
+				Cancellation reg;
+				if (null != (reg = registration.get())) {
+					reg.dispose();
 				}
 			}
 		};
 
-		final Consumer<Long> consumer = new Consumer<Long>() {
-			@Override
-			public void accept(Long now) {
-				execute(task);
-			}
-		};
+		final Runnable consumer = () -> execute(task);
 
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(task, null, initialDelay);
-		registration.set(timer.schedule(consumer, periodInMs, initialDelayInMs));
+		registration.set(timer.schedulePeriodically(consumer, initialDelayInMs, periodInMs, TimeUnit.MILLISECONDS));
 		return future;
 	}
 
@@ -471,32 +449,29 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		final long delayInMs = convertToMillis(initialDelay, unit);
 		final ScheduledFutureTask<?> future = new ScheduledFutureTask<Object>(command, null, initialDelayInMs);
 
-		final AtomicReference<Runnable> registration = new AtomicReference<>();
+		final AtomicReference<Cancellation> registration = new AtomicReference<>();
 
-		final Consumer<Long> consumer = new Consumer<Long>() {
-			final Consumer<Long> self = this;
+		final Runnable consumer = new Runnable() {
+			final Runnable self = this;
 
 			@Override
-			public void accept(Long now) {
-				execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							future.run();
-							timer.submit(self, delayInMs);
-						} catch (Throwable t) {
-							log.error(t.getMessage(), t);
-							Runnable reg;
-							if (null != (reg = registration.get())) {
-								reg.run();
-							}
+			public void run() {
+				execute(() -> {
+					try {
+						future.run();
+						timer.schedule(self, delayInMs, TimeUnit.MILLISECONDS);
+					} catch (Throwable t) {
+						log.error(t.getMessage(), t);
+						Cancellation reg;
+						if (null != (reg = registration.get())) {
+							reg.dispose();
 						}
 					}
 				});
 			}
 		};
 
-		registration.set(timer.submit(consumer, initialDelayInMs));
+		registration.set(timer.schedule(consumer, initialDelayInMs, TimeUnit.MILLISECONDS));
 		return future;
 	}
 
