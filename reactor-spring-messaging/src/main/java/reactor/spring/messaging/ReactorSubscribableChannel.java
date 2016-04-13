@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.reactivestreams.Processor;
+import reactor.core.flow.Cancellation;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.TopicProcessor;
 
@@ -24,9 +25,9 @@ import org.springframework.util.ObjectUtils;
  */
 public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel, SubscribableChannel {
 
-	private final Map<MessageHandler, Runnable>
+	private final Map<MessageHandler, Cancellation>
 			messageHandlerConsumers =
-			new ConcurrentHashMap<MessageHandler, Runnable>();
+			new ConcurrentHashMap<>();
 
 	private final Processor<Message<?>, Message<?>> processor;
 
@@ -66,7 +67,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@Override
 	public boolean subscribe(final MessageHandler handler) {
 		Consumer<Message<?>> consumer = handler::handleMessage;
-		Runnable c = Flux.from(processor).consume(consumer);
+		Cancellation c = Flux.from(processor).consume(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
@@ -75,11 +76,11 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean unsubscribe(MessageHandler handler) {
-		Runnable control = messageHandlerConsumers.remove(handler);
+		Cancellation control = messageHandlerConsumers.remove(handler);
 		if (null == control) {
 			return false;
 		}
-		control.run();
+		control.dispose();
 		return true;
 	}
 
