@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import org.reactivestreams.Processor;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.SchedulerGroup;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.PlatformDependent;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
@@ -31,7 +32,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 			Supplier<Supplier<Processor>>() {
 		@Override
 		public Supplier<Processor> get() {
-			final SchedulerGroup group =
+			final Scheduler group =
 					SchedulerGroup.async(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent
 							.MEDIUM_BUFFER_SIZE);
 
