@@ -67,7 +67,7 @@ public class ReactorSubscribableChannel implements BeanNameAware, MessageChannel
 	@Override
 	public boolean subscribe(final MessageHandler handler) {
 		Consumer<Message<?>> consumer = handler::handleMessage;
-		Cancellation c = Flux.from(processor).consume(consumer);
+		Cancellation c = Flux.from(processor).subscribe(consumer);
 		messageHandlerConsumers.put(handler, c);
 
 		return true;
