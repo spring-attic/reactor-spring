@@ -4,8 +4,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.reactivestreams.Processor;
-import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Computations;
+import reactor.core.publisher.EmitterProcessor;
+import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.PlatformDependent;
@@ -28,35 +29,24 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 	private static final String DEFAULT_TIMER_SUPPLIER_NAME  = "reactorTimer";
 	private static final String DEFAULT_SCHEDULER_GROUP_NAME = "reactorGroupedProcessors";
 
-	private static final Supplier<Supplier<Processor>> DEFAULT_SCHEDULER_GROUP = new
-			Supplier<Supplier<Processor>>() {
-		@Override
-		public Supplier<Processor> get() {
-			final Scheduler group =
-					Computations.parallel(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent
-							.MEDIUM_BUFFER_SIZE);
+	private static final Supplier<Supplier<Processor>> DEFAULT_SCHEDULER_GROUP = () -> {
+		final Scheduler group =
+				Computations.parallel(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent
+						.MEDIUM_BUFFER_SIZE);
 
-			return new Supplier<Processor>() {
-				@Override
-				public Processor get() {
-					return EmitterProcessor.async(group);
-				}
-			};
 
-		}
+
+
+		return (Supplier<Processor>) () -> {
+			FluxProcessor emitter = EmitterProcessor.create();
+			return FluxProcessor.wrap(emitter, emitter.publishOn(group));
+		};
+
 	};
 
-	private static final Supplier<Supplier<Timer>> DEFAULT_TIMER_SUPPLIER =  new Supplier<Supplier<Timer>>() {
-		@Override
-		public Supplier<Timer> get() {
-			final Timer timer = Timer.create();
-			return new Supplier<Timer>() {
-				@Override
-				public Timer get() {
-					return timer;
-				}
-			};
-		}
+	private static final Supplier<Supplier<Timer>> DEFAULT_TIMER_SUPPLIER = () -> {
+		final Timer timer = Timer.create();
+		return () -> timer;
 	};
 
 	protected <T> void registerReactorBean(BeanDefinitionRegistry registry,
