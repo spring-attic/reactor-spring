@@ -30,14 +30,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.flow.Cancellation;
-import reactor.core.publisher.EventLoopProcessor;
+import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.Timer;
 import reactor.core.util.Exceptions;
 
@@ -94,7 +93,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	@Override
 	public void stop(Runnable callback) {
 		if (running.compareAndSet(true, false)) {
-			getProcessor().awaitAndShutdown();
+			getProcessor().onComplete();
 			callback.run();
 		}
 	}
@@ -112,13 +111,13 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	@Override
 	public void stop() {
 		if (running.compareAndSet(true, false)){
-			getProcessor().awaitAndShutdown();
+			getProcessor().onComplete();
 		}
 	}
 
 	@Override
 	public boolean isRunning() {
-		return getProcessor().alive() && running.get();
+		return running.get();
 	}
 
 	@Override
@@ -233,12 +232,13 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 
 	@Override
 	public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-		return getProcessor().awaitAndShutdown(timeout, unit);
+		getProcessor().onComplete();
+		return getProcessor().isTerminated();
 	}
 
 	@Override
 	public boolean isTerminated() {
-		return !getProcessor().alive();
+		return getProcessor().isTerminated();
 	}
 
 	@Override
@@ -255,7 +255,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 	@Override
 	public void shutdown() {
 		if(running.compareAndSet(true, false)) {
-			getProcessor().shutdown();
+			getProcessor().onComplete();
 		}
 	}
 
@@ -475,7 +475,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 		return future;
 	}
 
-	protected abstract EventLoopProcessor<Runnable, Runnable> getProcessor();
+	protected abstract FluxProcessor<Runnable, Runnable> getProcessor();
 
 	private static long convertToMillis(long l, TimeUnit timeUnit) {
 		if (timeUnit == TimeUnit.MILLISECONDS) {
