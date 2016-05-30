@@ -26,7 +26,7 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	private TopicProcessor<Runnable> dispatcher;
 
 	public RingBufferAsyncTaskExecutor() {
-		this(Timer.globalOrNew());
+		this(Timer.global());
 	}
 
 	public RingBufferAsyncTaskExecutor(Timer timer) {

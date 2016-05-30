@@ -24,7 +24,7 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private WorkQueueProcessor<Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
-		this(Timer.globalOrNew());
+		this(Timer.global());
 	}
 
 	public WorkQueueAsyncTaskExecutor(Timer timer) {
