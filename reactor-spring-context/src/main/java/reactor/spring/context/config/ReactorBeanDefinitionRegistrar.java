@@ -9,6 +9,7 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Timer;
+import reactor.core.scheduler.TimedScheduler;
 import reactor.core.util.PlatformDependent;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
@@ -44,8 +45,8 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 
 	};
 
-	private static final Supplier<Supplier<Timer>> DEFAULT_TIMER_SUPPLIER = () -> {
-		final Timer timer = Timer.create();
+	private static final Supplier<Supplier<TimedScheduler>> DEFAULT_TIMER_SUPPLIER = () -> {
+		final TimedScheduler timer = Timer.create();
 		return () -> timer;
 	};
 
@@ -76,7 +77,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 		registerReactorBean(registry,
 		  (String) attrs.get("timerSupplier"),
 		  DEFAULT_TIMER_SUPPLIER_NAME,
-		  Timer.class,
+				TimedScheduler.class,
 		  DEFAULT_TIMER_SUPPLIER
 		);
 

@@ -3,7 +3,8 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.TopicProcessor;
-import reactor.core.scheduler.Timer;
+import reactor.core.scheduler.Schedulers;
+import reactor.core.scheduler.TimedScheduler;
 import reactor.core.util.WaitStrategy;
 
 import org.springframework.beans.factory.BeanNameAware;
@@ -26,10 +27,10 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	private TopicProcessor<Runnable> dispatcher;
 
 	public RingBufferAsyncTaskExecutor() {
-		this(Timer.global());
+		this(Schedulers.timer());
 	}
 
-	public RingBufferAsyncTaskExecutor(Timer timer) {
+	public RingBufferAsyncTaskExecutor(TimedScheduler timer) {
 		super(timer);
 	}
 

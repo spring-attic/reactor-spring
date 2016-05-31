@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.flow.Cancellation;
 import reactor.core.publisher.FluxProcessor;
-import reactor.core.scheduler.Timer;
+import reactor.core.scheduler.TimedScheduler;
 import reactor.core.util.Exceptions;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -64,7 +64,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
   Subscriber<Runnable> {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	private final Timer timer;
+	private final TimedScheduler timer;
 
 	private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -75,7 +75,7 @@ public abstract class AbstractAsyncTaskExecutor implements ApplicationEventPubli
 
 	private ApplicationEventPublisher eventPublisher;
 
-	protected AbstractAsyncTaskExecutor(Timer timer) {
+	protected AbstractAsyncTaskExecutor(TimedScheduler timer) {
 		this.timer = timer;
 	}
 

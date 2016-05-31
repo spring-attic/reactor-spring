@@ -3,7 +3,8 @@ package reactor.spring.core.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.WorkQueueProcessor;
-import reactor.core.scheduler.Timer;
+import reactor.core.scheduler.Schedulers;
+import reactor.core.scheduler.TimedScheduler;
 import reactor.core.util.WaitStrategy;
 
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -24,10 +25,10 @@ public class WorkQueueAsyncTaskExecutor extends AbstractAsyncTaskExecutor implem
 	private WorkQueueProcessor<Runnable> workQueue;
 
 	public WorkQueueAsyncTaskExecutor() {
-		this(Timer.global());
+		this(Schedulers.timer());
 	}
 
-	public WorkQueueAsyncTaskExecutor(Timer timer) {
+	public WorkQueueAsyncTaskExecutor(TimedScheduler timer) {
 		super(timer);
 	}
 
