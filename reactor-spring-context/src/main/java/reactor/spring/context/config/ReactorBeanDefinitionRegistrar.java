@@ -4,12 +4,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.reactivestreams.Processor;
-import reactor.core.publisher.Computations;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-import reactor.core.scheduler.Timer;
 import reactor.core.scheduler.TimedScheduler;
 import reactor.core.util.PlatformDependent;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
@@ -33,7 +31,8 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 
 	private static final Supplier<Supplier<Processor>> DEFAULT_SCHEDULER_GROUP = () -> {
 		final Scheduler group =
-				Computations.parallel(DEFAULT_SCHEDULER_GROUP_NAME + "-spring", PlatformDependent
+				Schedulers.newParallel(DEFAULT_SCHEDULER_GROUP_NAME + "-spring",
+						PlatformDependent
 						.MEDIUM_BUFFER_SIZE);
 
 
