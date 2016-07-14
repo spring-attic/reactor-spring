@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.TopicProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.core.scheduler.TimedScheduler;
-import reactor.core.util.WaitStrategy;
+import reactor.util.WaitStrategy;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.util.Assert;
@@ -74,20 +74,20 @@ public class RingBufferAsyncTaskExecutor extends AbstractAsyncTaskExecutor imple
 	}
 
 	/**
-	 * Get the {@link reactor.core.util.WaitStrategy} this {@link reactor.core.queue
+	 * Get the {@link reactor.util.WaitStrategy} this {@link reactor.core.queue
 	 * .RingBuffer} is using.
 	 *
-	 * @return the {@link reactor.core.util.WaitStrategy}
+	 * @return the {@link reactor.util.WaitStrategy}
 	 */
 	public WaitStrategy getWaitStrategy() {
 		return waitStrategy;
 	}
 
 	/**
-	 * Set the {@link reactor.core.util.WaitStrategy} to use when creating the internal {@link
+	 * Set the {@link reactor.util.WaitStrategy} to use when creating the internal {@link
 	 * reactor.core.queue.RingBuffer}.
 	 *
-	 * @param waitStrategy the {@link reactor.core.util.WaitStrategy}
+	 * @param waitStrategy the {@link reactor.util.WaitStrategy}
 	 */
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		this.waitStrategy = waitStrategy;

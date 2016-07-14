@@ -9,7 +9,7 @@ import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.core.scheduler.TimedScheduler;
-import reactor.core.util.PlatformDependent;
+import reactor.util.ReactorProperties;
 import reactor.spring.factory.CreateOrReuseFactoryBean;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;

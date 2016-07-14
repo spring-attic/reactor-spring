@@ -35,10 +35,10 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.flow.Cancellation;
+import reactor.core.Cancellation;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.TimedScheduler;
-import reactor.core.util.Exceptions;
+import reactor.util.Exceptions;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;

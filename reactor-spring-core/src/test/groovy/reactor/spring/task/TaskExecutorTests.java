@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import reactor.core.util.WaitStrategy;
+import reactor.util.WaitStrategy;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
 
