@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import reactor.util.WaitStrategy
+import reactor.util.concurrent.WaitStrategy
 import reactor.spring.core.task.WorkQueueAsyncTaskExecutor
 import spock.lang.Ignore
 import spock.lang.Specification

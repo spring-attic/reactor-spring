@@ -32,7 +32,7 @@ public class ReactorBeanDefinitionRegistrar implements ImportBeanDefinitionRegis
 	private static final Supplier<Supplier<Processor>> DEFAULT_SCHEDULER_GROUP = () -> {
 		final Scheduler group =
 				Schedulers.newParallel(DEFAULT_SCHEDULER_GROUP_NAME + "-spring",
-						PlatformDependent
+						Reactor
 						.MEDIUM_BUFFER_SIZE);
 
 
