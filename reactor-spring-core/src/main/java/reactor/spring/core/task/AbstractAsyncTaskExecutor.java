@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.Cancellation;
 import reactor.core.publisher.FluxProcessor;
 import reactor.core.scheduler.TimedScheduler;
-import reactor.util.Exceptions;
+import reactor.core.Exceptions;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
