@@ -1,3 +1,5 @@
+# reactor-spring is no longer actively maintained by VMware, Inc.
+
 reactor-spring
 ==============
 
